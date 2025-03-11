@@ -1,35 +1,123 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// App.jsx - Main application component
 
-function App() {
-  const [count, setCount] = useState(0)
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider } from "@contexts/AuthContext";
 
+// Pages
+import LoginPage from "@pages/LoginPage";
+import RegisterPage from "@pages/RegisterPage";
+import DashboardPage from "@pages/DashboardPage";
+import StudyPage from "@pages/StudyPage";
+import CardsPage from "@pages/CardsPage";
+import DeckPage from "@pages/DeckPage";
+import NewCardPage from "@pages/NewCardPage";
+import NewDeckPage from "@pages/NewDeckPage";
+import StatsPage from "@pages/StatsPage";
+import SettingsPage from "@pages/SettingsPage";
+import NotFoundPage from "@pages/NotFoundPage";
+
+// Components
+import Header from "@components/common/Header";
+import Footer from "@components/common/Footer";
+import ProtectedRoute from "@components/common/ProtectedRoute";
+
+// Styles
+import "./App.css";
+
+const App = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Router>
+      <AuthProvider>
+        <div className="app">
+          <Header />
+          <main className="main-content">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
-export default App
+              {/* Protected routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/study/:deckId?"
+                element={
+                  <ProtectedRoute>
+                    <StudyPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/cards"
+                element={
+                  <ProtectedRoute>
+                    <CardsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/cards/new"
+                element={
+                  <ProtectedRoute>
+                    <NewCardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/decks/:id"
+                element={
+                  <ProtectedRoute>
+                    <DeckPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/decks/new"
+                element={
+                  <ProtectedRoute>
+                    <NewDeckPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/stats"
+                element={
+                  <ProtectedRoute>
+                    <StatsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <SettingsPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Default routes */}
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </AuthProvider>
+    </Router>
+  );
+};
+
+export default App;
