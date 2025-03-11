@@ -44,9 +44,9 @@ const StudyCard = ({ card, onReview, isLast }) => {
 
   // Get next interval based on SRS data
   const getNextInterval = (rating) => {
-    if (!card.interval) return "1 day";
+    if (!card.review_interval) return "1 day";
 
-    let interval = card.interval;
+    let interval = card.review_interval;
     const ease = parseFloat(card.ease_factor || 2.5);
 
     switch (rating) {
@@ -166,3 +166,5 @@ const StudyCard = ({ card, onReview, isLast }) => {
     </div>
   );
 };
+
+export default StudyCard;
