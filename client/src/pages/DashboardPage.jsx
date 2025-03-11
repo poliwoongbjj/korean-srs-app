@@ -1,9 +1,8 @@
-// pages/DashboardPage.jsx - Dashboard page
-
+// src/pages/DashboardPage.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@contexts/AuthContext";
-import cardsService from "@services/cards.service";
+import { useAuth } from "@/contexts/AuthContext";
+import api from "@/services/api";
 import "./DashboardPage.css";
 
 const DashboardPage = () => {
@@ -34,38 +33,66 @@ const DashboardPage = () => {
       try {
         setLoading(true);
 
-        // Get user stats from API
-        const statsResponse = await fetch("/api/stats");
-        const statsData = await statsResponse.json();
+        console.log("Fetching user stats...");
+        // Let's get user stats first as a simple check
+        try {
+          const statsResponse = await api.get("/stats");
+          console.log("Stats response:", statsResponse.data);
 
-        // Get due cards count
-        const dueResponse = await cardsService.getDueCards();
-        const dueCount = dueResponse.count;
+          // Get other data...
+          // If you don't have these endpoints implemented yet, comment them out
 
-        // Get new cards count
-        const newResponse = await cardsService.getNewCards();
-        const newCount = newResponse.count;
+          /*
+          // Get due cards count
+          const dueResponse = await api.get('/cards/study/due');
+          console.log('Due cards response:', dueResponse.data);
+          const dueCount = dueResponse.data.count;
+          
+          // Get new cards count
+          const newResponse = await api.get('/cards/study/new');
+          console.log('New cards response:', newResponse.data);
+          const newCount = newResponse.data.count;
+          
+          // Get total cards count
+          const allCardsResponse = await api.get('/cards');
+          console.log('All cards response:', allCardsResponse.data);
+          const totalCount = allCardsResponse.data.total;
+          
+          // Update stats
+          setStats({
+            dueCards: dueCount,
+            newCards: newCount,
+            totalCards: totalCount,
+            streak: statsResponse.data.data.streak_days || 0,
+            reviewsToday: statsResponse.data.data.reviews_today || 0
+          });
+          
+          // Get decks
+          const decksResponse = await api.get('/decks');
+          console.log('Decks response:', decksResponse.data);
+          setDecks(decksResponse.data.data);
+          */
 
-        // Get total cards count
-        const allCardsResponse = await cardsService.getAllCards({ limit: 1 });
-        const totalCount = allCardsResponse.total;
+          // For now, just set some placeholder data
+          setStats({
+            dueCards: 0,
+            newCards: 0,
+            totalCards: 0,
+            streak: 0,
+            reviewsToday: 0,
+          });
 
-        // Update stats
-        setStats({
-          dueCards: dueCount,
-          newCards: newCount,
-          totalCards: totalCount,
-          streak: statsData.data.streak_days || 0,
-          reviewsToday: statsData.data.reviews_today || 0,
-        });
-
-        // Get decks
-        const decksResponse = await fetch("/api/decks");
-        const decksData = await decksResponse.json();
-        setDecks(decksData.data);
+          setDecks([]);
+        } catch (statsError) {
+          console.error("Error fetching stats:", statsError);
+          console.error("Response data:", statsError.response?.data);
+          console.error("Status code:", statsError.response?.status);
+          throw new Error(`Stats API error: ${statsError.message}`);
+        }
       } catch (err) {
         console.error("Error loading dashboard data:", err);
-        setError("Failed to load dashboard data. Please try again.");
+        console.error("Response:", err.response);
+        setError(`Failed to load dashboard data: ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -75,15 +102,6 @@ const DashboardPage = () => {
       fetchDashboardData();
     }
   }, [isAuthenticated]);
-
-  // Start study session
-  const startStudy = (deckId = null) => {
-    if (deckId) {
-      navigate(`/study/${deckId}`);
-    } else {
-      navigate("/study");
-    }
-  };
 
   if (loading) {
     return (
@@ -102,6 +120,18 @@ const DashboardPage = () => {
         <div className="error-container">
           <h2>Error</h2>
           <p>{error}</p>
+          <div>
+            <h3>Debug Information</h3>
+            <p>Make sure your backend server is running</p>
+            <p>Check that the following endpoints are implemented:</p>
+            <ul>
+              <li>/api/stats</li>
+              <li>/api/cards/study/due</li>
+              <li>/api/cards/study/new</li>
+              <li>/api/cards</li>
+              <li>/api/decks</li>
+            </ul>
+          </div>
           <button
             className="primary-btn"
             onClick={() => window.location.reload()}
@@ -116,7 +146,7 @@ const DashboardPage = () => {
   return (
     <div className="dashboard-page">
       <div className="dashboard-header">
-        <h1>Welcome, {user?.username}!</h1>
+        <h1>Welcome, {user?.username || "User"}!</h1>
         {stats.streak > 0 && (
           <div className="streak-badge">
             <span className="streak-icon">🔥</span>
@@ -131,7 +161,10 @@ const DashboardPage = () => {
             <div className="stat-value">{stats.dueCards}</div>
             <div className="stat-label">Due Today</div>
             {stats.dueCards > 0 && (
-              <button className="primary-btn" onClick={() => startStudy()}>
+              <button
+                className="primary-btn"
+                onClick={() => navigate("/study")}
+              >
                 Review Now
               </button>
             )}
@@ -141,7 +174,10 @@ const DashboardPage = () => {
             <div className="stat-value">{stats.newCards}</div>
             <div className="stat-label">New Cards</div>
             {stats.newCards > 0 && (
-              <button className="secondary-btn" onClick={() => startStudy()}>
+              <button
+                className="secondary-btn"
+                onClick={() => navigate("/study")}
+              >
                 Learn New
               </button>
             )}
@@ -191,7 +227,7 @@ const DashboardPage = () => {
                 <div className="deck-actions">
                   <button
                     className="primary-btn"
-                    onClick={() => startStudy(deck.id)}
+                    onClick={() => navigate(`/study/${deck.id}`)}
                     disabled={deck.due_cards === 0}
                   >
                     Study
@@ -211,54 +247,6 @@ const DashboardPage = () => {
                 </Link>
               </div>
             )}
-          </div>
-        </div>
-
-        <div className="quick-actions">
-          <div className="section-header">
-            <h2>Quick Actions</h2>
-          </div>
-
-          <div className="actions-grid">
-            <Link to="/cards/new" className="action-card">
-              <div className="action-icon">
-                <i className="fa fa-plus-circle"></i>
-              </div>
-              <div className="action-text">
-                <h3>Add New Card</h3>
-                <p>Create a new Korean vocabulary card</p>
-              </div>
-            </Link>
-
-            <Link to="/import" className="action-card">
-              <div className="action-icon">
-                <i className="fa fa-upload"></i>
-              </div>
-              <div className="action-text">
-                <h3>Import Cards</h3>
-                <p>Import cards from CSV or Anki file</p>
-              </div>
-            </Link>
-
-            <Link to="/stats" className="action-card">
-              <div className="action-icon">
-                <i className="fa fa-chart-bar"></i>
-              </div>
-              <div className="action-text">
-                <h3>Detailed Stats</h3>
-                <p>View your learning progress</p>
-              </div>
-            </Link>
-
-            <Link to="/settings" className="action-card">
-              <div className="action-icon">
-                <i className="fa fa-cog"></i>
-              </div>
-              <div className="action-text">
-                <h3>Settings</h3>
-                <p>Customize your learning experience</p>
-              </div>
-            </Link>
           </div>
         </div>
       </div>

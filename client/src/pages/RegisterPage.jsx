@@ -1,13 +1,11 @@
-// pages/RegisterPage.jsx - Registration page
-
+// src/pages/RegisterPage.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@contexts/AuthContext";
-import "./AuthPages.css";
+import { useAuth } from "@/contexts/AuthContext";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const { register, isAuthenticated, error, clearError } = useAuth();
+  const { register, isAuthenticated, error } = useAuth();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -17,18 +15,6 @@ const RegisterPage = () => {
   });
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
-
-  // Clear errors when component mounts
-  useEffect(() => {
-    clearError();
-  }, [clearError]);
 
   // Handle input change
   const handleChange = (e) => {
@@ -53,8 +39,6 @@ const RegisterPage = () => {
 
     if (!formData.username.trim()) {
       errors.username = "Username is required";
-    } else if (formData.username.length < 3) {
-      errors.username = "Username must be at least 3 characters";
     }
 
     if (!formData.email.trim()) {
@@ -80,28 +64,45 @@ const RegisterPage = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Form submission attempted");
 
     if (validateForm()) {
       setIsSubmitting(true);
 
       try {
-        // Call register function from auth context
+        console.log("Sending registration data:", {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        });
+
         const success = await register({
           username: formData.username,
           email: formData.email,
           password: formData.password,
         });
 
+        console.log("Registration result:", success);
+
         if (success) {
-          navigate("/dashboard", { replace: true });
+          navigate("/login");
         }
       } catch (err) {
         console.error("Registration error:", err);
       } finally {
         setIsSubmitting(false);
       }
+    } else {
+      console.log("Form validation failed", formErrors);
     }
   };
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
 
   return (
     <div className="auth-page">

@@ -45,36 +45,27 @@ export const AuthProvider = ({ children }) => {
   // Register user
   const register = async (userData) => {
     try {
-      setLoading(true);
       setError(null);
+      console.log("Registering user with data:", userData);
 
-      const res = await api.post("/auth/register", userData);
+      // Call your backend API
+      const response = await api.post("/auth/register", userData);
+      console.log("Registration response:", response);
 
-      // Automatically log in after registration
-      const loginRes = await api.post("/auth/login", {
-        email: userData.email,
-        password: userData.password,
-      });
-
-      const { token: newToken, user: userData } = loginRes.data.data;
-
-      // Save token to localStorage
-      localStorage.setItem("token", newToken);
-      setToken(newToken);
-      setUser(userData);
-
-      // Set token in api headers
-      api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
-
-      return true;
+      if (response.data.success) {
+        // Optionally auto-login after registration
+        // await login(userData.email, userData.password);
+        return true;
+      } else {
+        setError(response.data.message || "Registration failed");
+        return false;
+      }
     } catch (err) {
       console.error("Registration error:", err);
       setError(
         err.response?.data?.message || "Registration failed. Please try again."
       );
       return false;
-    } finally {
-      setLoading(false);
     }
   };
 
