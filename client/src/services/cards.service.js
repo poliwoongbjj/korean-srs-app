@@ -106,16 +106,6 @@ class CardsService {
     const response = await api.get(`/cards/${id}/progress`);
     return response.data;
   }
-
-  /**
-   * Get all categories
-   *
-   * @returns {Promise<Object>} - Response with categories data
-   */
-  async getCategories() {
-    const response = await api.get("/categories");
-    return response.data;
-  }
 }
 
 export default new CardsService();
