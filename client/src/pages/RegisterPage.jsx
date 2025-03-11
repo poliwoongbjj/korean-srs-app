@@ -25,10 +25,12 @@ const RegisterPage = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // Clear errors when component mounts
+  // Only clear errors when component mounts
   useEffect(() => {
-    clearError && clearError();
-  }, [clearError]);
+    return () => {
+      clearError && clearError();
+    };
+  }, []);
 
   // Handle input change
   const handleChange = (e) => {
@@ -105,6 +107,10 @@ const RegisterPage = () => {
 
   return (
     <div className="auth-page">
+      {/* Debug info - remove after fixing */}
+      <div style={{ background: "yellow", padding: "10px" }}>
+        Error state: {error ? error : "No error"}
+      </div>
       <div className="auth-container">
         <div className="auth-header">
           <h1>Join Korean Wanki</h1>

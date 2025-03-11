@@ -54,9 +54,18 @@ export const AuthProvider = ({ children }) => {
       return true;
     } catch (err) {
       console.error("Registration error:", err);
-      setError(
-        err.response?.data?.message || "Registration failed. Please try again."
-      );
+
+      // Extract the error message from the response
+      console.log("Full error response:", err.response);
+      console.log("Error data:", err.response?.data);
+      console.log("Error message from server:", err.response?.data?.message);
+      // Notice how we dive into err.response.data.message
+      const errorMessage =
+        err.response?.data?.message || "Registration failed. Please try again.";
+      console.log("Error message from server:", errorMessage); // Add this for debugging
+
+      setError(errorMessage);
+      console.log("Updated error state:", errorMessage);
       return false;
     } finally {
       setLoading(false);
