@@ -31,11 +31,13 @@ exports.getAllCards = async (req, res, next) => {
       }
     }
 
-    // Pagination
-    query += " ORDER BY id LIMIT ? OFFSET ?";
-    params.push(parseInt(limit), parseInt(offset));
+    // Order by ID
+    query += " ORDER BY id";
 
-    const cards = await db.query(query, params);
+    // Use the new queryWithLimit function for pagination
+    const cards = await db.queryWithLimit(query, params, limit, offset);
+
+    // Get total count without limit
     const totalRows = await db.query("SELECT COUNT(*) as count FROM cards");
     const totalCount = totalRows[0].count;
 
@@ -44,6 +46,56 @@ exports.getAllCards = async (req, res, next) => {
       count: cards.length,
       total: totalCount,
       data: cards,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get cards due for review
+ */
+exports.getDueCards = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const { limit = 20, deckId } = req.query;
+
+    // Use SRS service to get due cards
+    const dueCards = await srsService.getDueCards(
+      userId,
+      parseInt(limit),
+      deckId ? parseInt(deckId) : null
+    );
+
+    res.status(200).json({
+      success: true,
+      count: dueCards.length,
+      data: dueCards,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get new cards to learn
+ */
+exports.getNewCards = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const { limit = 10, deckId } = req.query;
+
+    // Use SRS service to get new cards
+    const newCards = await srsService.getNewCards(
+      userId,
+      parseInt(limit),
+      deckId ? parseInt(deckId) : null
+    );
+
+    res.status(200).json({
+      success: true,
+      count: newCards.length,
+      data: newCards,
     });
   } catch (error) {
     next(error);
