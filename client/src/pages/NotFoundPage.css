@@ -1,0 +1,83 @@
+/* pages/NotFoundPage.css - Styles for 404 page */
+
+.not-found-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 20px;
+  text-align: center;
+}
+
+.not-found-container {
+  max-width: 600px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+}
+
+.not-found-page h1 {
+  font-size: 100px;
+  color: #4263eb;
+  margin: 0;
+  line-height: 1;
+}
+
+.not-found-page h2 {
+  font-size: 28px;
+  color: #343a40;
+  margin: 10px 0 20px;
+}
+
+.not-found-page p {
+  color: #6c757d;
+  margin-bottom: 30px;
+}
+
+.not-found-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.not-found-actions .primary-btn,
+.not-found-actions .secondary-btn {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.not-found-actions .primary-btn {
+  background-color: #4263eb;
+  color: white;
+}
+
+.not-found-actions .primary-btn:hover {
+  background-color: #364fc7;
+}
+
+.not-found-actions .secondary-btn {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.not-found-actions .secondary-btn:hover {
+  background-color: #dee2e6;
+}
+
+@media (max-width: 576px) {
+  .not-found-page h1 {
+    font-size: 80px;
+  }
+  
+  .not-found-page h2 {
+    font-size: 24px;
+  }
+  
+  .not-found-actions {
+    flex-direction: column;
+  }
+}
