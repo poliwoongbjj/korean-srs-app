@@ -2,7 +2,7 @@
 
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "@services/api";
+import api from "@/services/api";
 
 // Create auth context
 const AuthContext = createContext();
@@ -45,27 +45,21 @@ export const AuthProvider = ({ children }) => {
   // Register user
   const register = async (userData) => {
     try {
+      setLoading(true);
       setError(null);
-      console.log("Registering user with data:", userData);
 
-      // Call your backend API
-      const response = await api.post("/auth/register", userData);
-      console.log("Registration response:", response);
+      const res = await api.post("/auth/register", userData);
+      console.log("Registration successful:", res.data);
 
-      if (response.data.success) {
-        // Optionally auto-login after registration
-        // await login(userData.email, userData.password);
-        return true;
-      } else {
-        setError(response.data.message || "Registration failed");
-        return false;
-      }
+      return true;
     } catch (err) {
       console.error("Registration error:", err);
       setError(
         err.response?.data?.message || "Registration failed. Please try again."
       );
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
