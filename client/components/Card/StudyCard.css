@@ -1,0 +1,213 @@
+/* components/Card/StudyCard.css - Styles for study card component */
+
+.study-card-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  perspective: 1000px;
+  margin: 20px auto;
+  max-width: 500px;
+  width: 100%;
+}
+
+.study-card {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+.study-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.card-front {
+  background-color: #f8f9fa;
+  border: 2px solid #e9ecef;
+}
+
+.card-back {
+  background-color: #e9ecef;
+  transform: rotateY(180deg);
+  border: 2px solid #dee2e6;
+}
+
+.card-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.korean-text {
+  font-size: 36px;
+  margin-bottom: 16px;
+  color: #212529;
+}
+
+.english-text {
+  font-size: 30px;
+  margin-bottom: 16px;
+  color: #343a40;
+}
+
+.romanization {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.example-sentence {
+  font-size: 16px;
+  margin-top: 16px;
+  color: #495057;
+  font-style: italic;
+}
+
+.pronunciation-notes {
+  font-size: 14px;
+  margin-top: 8px;
+  color: #6c757d;
+}
+
+.hint-text {
+  position: absolute;
+  bottom: 12px;
+  font-size: 14px;
+  color: #adb5bd;
+  opacity: 0.8;
+}
+
+.card-image {
+  max-width: 100%;
+  max-height: 120px;
+  margin-top: 16px;
+  border-radius: 8px;
+}
+
+.audio-btn {
+  background: none;
+  border: none;
+  color: #4263eb;
+  font-size: 20px;
+  cursor: pointer;
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.audio-btn:hover {
+  background-color: rgba(66, 99, 235, 0.1);
+}
+
+.rating-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 16px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.rating-buttons.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.rating-btn {
+  flex: 1;
+  margin: 0 4px;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rating-btn:hover {
+  transform: translateY(-2px);
+}
+
+.rating-btn.again {
+  background-color: #fa5252;
+  color: white;
+}
+
+.rating-btn.hard {
+  background-color: #ff922b;
+  color: white;
+}
+
+.rating-btn.good {
+  background-color: #51cf66;
+  color: white;
+}
+
+.rating-btn.easy {
+  background-color: #339af0;
+  color: white;
+}
+
+.progress-indicator {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.last-card-indicator {
+  color: #4263eb;
+  font-weight: 600;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  .study-card {
+    height: 250px;
+  }
+  
+  .korean-text {
+    font-size: 30px;
+  }
+  
+  .english-text {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rating-buttons {
+    flex-wrap: wrap;
+  }
+  
+  .rating-btn {
+    flex: 1 0 40%;
+    margin: 4px;
+  }
+}
