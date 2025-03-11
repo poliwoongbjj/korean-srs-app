@@ -14,13 +14,13 @@ import LoginPage from "@pages/LoginPage";
 import RegisterPage from "@pages/RegisterPage";
 import DashboardPage from "@pages/DashboardPage";
 import StudyPage from "@pages/StudyPage";
-import CardsPage from "@pages/CardsPage";
-import DeckPage from "@pages/DeckPage";
-import NewCardPage from "@pages/NewCardPage";
-import NewDeckPage from "@pages/NewDeckPage";
-import StatsPage from "@pages/StatsPage";
-import SettingsPage from "@pages/SettingsPage";
-import NotFoundPage from "@pages/NotFoundPage";
+// import CardsPage from "@pages/CardsPage";
+// import DeckPage from "@pages/DeckPage";
+// import NewCardPage from "@pages/NewCardPage";
+// import NewDeckPage from "@pages/NewDeckPage";
+// import StatsPage from "@pages/StatsPage";
+// import SettingsPage from "@pages/SettingsPage";
+// import NotFoundPage from "@pages/NotFoundPage";
 
 // Components
 import Header from "@components/common/Header";
@@ -59,7 +59,7 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route
+              {/* <Route
                 path="/cards"
                 element={
                   <ProtectedRoute>
@@ -106,11 +106,11 @@ const App = () => {
                     <SettingsPage />
                   </ProtectedRoute>
                 }
-              />
+              /> */}
 
               {/* Default routes */}
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="*" element={<NotFoundPage />} />
+              {/* <Route path="*" element={<NotFoundPage />} /> */}
             </Routes>
           </main>
           <Footer />
