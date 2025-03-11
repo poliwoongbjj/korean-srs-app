@@ -1,5 +1,3 @@
-// controllers/stats.controller.js - Stats controller
-
 const db = require("../config/database");
 
 /**
@@ -15,17 +13,26 @@ exports.getUserStats = async (req, res, next) => {
       [userId]
     );
 
-    // If user has no stats entry yet, get defaults
+    // If user has no stats entry yet, create one with defaults
     if (userStats.length === 0) {
-      userStats = [
-        {
-          user_id: userId,
-          cards_studied: 0,
-          total_reviews: 0,
-          streak_days: 0,
-          last_study_date: null,
-        },
-      ];
+      try {
+        await db.query(
+          "INSERT INTO user_stats (user_id, cards_studied, total_reviews, streak_days) VALUES (?, 0, 0, 0)",
+          [userId]
+        );
+
+        userStats = [
+          {
+            user_id: userId,
+            cards_studied: 0,
+            total_reviews: 0,
+            streak_days: 0,
+            last_study_date: null,
+          },
+        ];
+      } catch (insertError) {
+        console.error("Error creating user stats:", insertError);
+      }
     }
 
     // Get reviews today
@@ -46,6 +53,32 @@ exports.getUserStats = async (req, res, next) => {
       [userId]
     );
     const dueCards = dueCardsResult[0].count;
+
+    // Get total cards for user (cards they've seen)
+    const totalCardsResult = await db.query(
+      `SELECT COUNT(*) as count 
+       FROM user_cards 
+       WHERE user_id = ?`,
+      [userId]
+    );
+    const totalUserCards = totalCardsResult[0].count;
+
+    // Get total cards in system
+    const allCardsResult = await db.query(
+      "SELECT COUNT(*) as count FROM cards"
+    );
+    const totalSystemCards = allCardsResult[0].count;
+
+    // Calculate how many new cards are available
+    const newCardsResult = await db.query(
+      `SELECT COUNT(*) as count 
+       FROM cards 
+       WHERE id NOT IN (
+         SELECT card_id FROM user_cards WHERE user_id = ?
+       )`,
+      [userId]
+    );
+    const newCards = newCardsResult[0].count;
 
     // Get average performance
     const avgPerformanceResult = await db.query(
@@ -77,11 +110,15 @@ exports.getUserStats = async (req, res, next) => {
         ...userStats[0],
         reviews_today: reviewsToday,
         due_cards: dueCards,
+        new_cards: newCards,
+        total_cards: totalSystemCards,
+        cards_studied: totalUserCards,
         avg_rating: parseFloat(avgRating).toFixed(2),
         weekly_stats: weeklyStats,
       },
     });
   } catch (error) {
+    console.error("Error getting user stats:", error);
     next(error);
   }
 };
@@ -136,6 +173,7 @@ exports.getReviewHistory = async (req, res, next) => {
       data: history,
     });
   } catch (error) {
+    console.error("Error getting review history:", error);
     next(error);
   }
 };
@@ -171,6 +209,7 @@ exports.getCategoryPerformance = async (req, res, next) => {
       data: categoryStats,
     });
   } catch (error) {
+    console.error("Error getting category performance:", error);
     next(error);
   }
 };
