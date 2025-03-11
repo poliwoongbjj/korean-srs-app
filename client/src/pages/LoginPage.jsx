@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import "./AuthPages.css";
 
 const LoginPage = () => {
@@ -27,7 +27,7 @@ const LoginPage = () => {
 
   // Clear errors when component mounts
   useEffect(() => {
-    clearError();
+    clearError && clearError();
   }, [clearError]);
 
   // Handle input change
@@ -95,7 +95,7 @@ const LoginPage = () => {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-header">
-          <h1>Welcome Back</h1>
+          <h1>Welcome to Korean Wanki</h1>
           <p>Sign in to continue learning Korean</p>
         </div>
 

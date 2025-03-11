@@ -212,11 +212,9 @@ class SpacedRepetitionService {
       }
 
       // Order by cards that have been reviewed the least first, then by due date
-      query += ` ORDER BY uc.repetitions ASC, uc.next_review ASC LIMIT ?`;
-      params.push(limit);
-
+      query += ` ORDER BY uc.repetitions ASC, uc.next_review ASC`;
       const dueCards = await db.query(query, params);
-      return dueCards;
+      return dueCards.slice(0, parseInt(limit, 10)); // Apply limit in JavaScript instead
     } catch (error) {
       console.error("Error getting due cards:", error);
       throw error;
@@ -234,12 +232,12 @@ class SpacedRepetitionService {
   async getNewCards(userId, limit = 10, deckId = null) {
     try {
       let query = `
-        SELECT c.*
-        FROM cards c
-        WHERE c.id NOT IN (
-          SELECT card_id FROM user_cards WHERE user_id = ?
-        )
-      `;
+      SELECT c.*
+      FROM cards c
+      WHERE c.id NOT IN (
+        SELECT card_id FROM user_cards WHERE user_id = ?
+      )
+    `;
 
       const params = [userId];
 
@@ -249,18 +247,18 @@ class SpacedRepetitionService {
         params.push(deckId);
       }
 
-      // Order randomly to get a mix of cards
-      query += ` ORDER BY RAND() LIMIT ?`;
-      params.push(limit);
+      // Order randomly to get a mix of cards - without parameterized LIMIT
+      query += ` ORDER BY RAND()`;
 
       const newCards = await db.query(query, params);
-      return newCards;
+
+      // Apply the limit in JavaScript instead of SQL
+      return newCards.slice(0, parseInt(limit, 10));
     } catch (error) {
       console.error("Error getting new cards:", error);
       throw error;
     }
   }
-
   /**
    * Update user statistics after reviews
    *
