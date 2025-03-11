@@ -197,11 +197,11 @@ class SpacedRepetitionService {
   async getDueCards(userId, limit = 20, deckId = null) {
     try {
       let query = `
-        SELECT c.*, uc.ease_factor, uc.review_interval, uc.repetitions, uc.next_review
-        FROM cards c
-        JOIN user_cards uc ON c.id = uc.card_id
-        WHERE uc.user_id = ? AND uc.next_review <= NOW()
-      `;
+      SELECT c.*, uc.ease_factor, uc.review_interval, uc.repetitions, uc.next_review
+      FROM cards c
+      JOIN user_cards uc ON c.id = uc.card_id
+      WHERE uc.user_id = ? AND uc.next_review <= NOW()
+    `;
 
       const params = [userId];
 
@@ -213,8 +213,9 @@ class SpacedRepetitionService {
 
       // Order by cards that have been reviewed the least first, then by due date
       query += ` ORDER BY uc.repetitions ASC, uc.next_review ASC`;
-      const dueCards = await db.query(query, params);
-      return dueCards.slice(0, parseInt(limit, 10)); // Apply limit in JavaScript instead
+
+      // Use the new queryWithLimit function
+      return await db.queryWithLimit(query, params, limit);
     } catch (error) {
       console.error("Error getting due cards:", error);
       throw error;
@@ -247,13 +248,11 @@ class SpacedRepetitionService {
         params.push(deckId);
       }
 
-      // Order randomly to get a mix of cards - without parameterized LIMIT
+      // Order randomly to get a mix of cards
       query += ` ORDER BY RAND()`;
 
-      const newCards = await db.query(query, params);
-
-      // Apply the limit in JavaScript instead of SQL
-      return newCards.slice(0, parseInt(limit, 10));
+      // Use the new queryWithLimit function
+      return await db.queryWithLimit(query, params, limit);
     } catch (error) {
       console.error("Error getting new cards:", error);
       throw error;
