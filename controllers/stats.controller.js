@@ -1,3 +1,5 @@
+// controllers/stats.controller.js - Stats controller
+
 const db = require("../config/database");
 
 /**
