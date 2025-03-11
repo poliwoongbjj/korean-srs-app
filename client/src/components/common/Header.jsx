@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import "./Header.css";
 
 const Header = () => {
@@ -29,7 +29,7 @@ const Header = () => {
           <div className="logo">
             <Link to={isAuthenticated ? "/dashboard" : "/"}>
               <span className="logo-text">한국어</span>{" "}
-              <span className="logo-app">Anki</span>
+              <span className="logo-app">Wanki</span>
             </Link>
           </div>
 

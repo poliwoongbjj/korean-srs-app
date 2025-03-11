@@ -14,7 +14,7 @@ const Footer = () => {
           <div className="footer-logo">
             <Link to="/">
               <span className="logo-text">한국어</span>{" "}
-              <span className="logo-app">Anki</span>
+              <span className="logo-app">Wanki</span>
             </Link>
             <p>Learn Korean with spaced repetition</p>
           </div>
@@ -77,7 +77,7 @@ const Footer = () => {
         </div>
 
         <div className="footer-bottom">
-          <p>&copy; {currentYear} Korean Anki. All rights reserved.</p>
+          <p>&copy; {currentYear} Korean Wanki. All rights reserved.</p>
         </div>
       </div>
     </footer>
