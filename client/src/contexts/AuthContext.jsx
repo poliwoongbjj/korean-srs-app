@@ -1,62 +1,161 @@
-// src/contexts/AuthContext.jsx
-import React, { createContext, useState, useEffect, useContext } from "react";
+// contexts/AuthContext.jsx - Authentication context
 
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "@services/api";
+
+// Create auth context
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Placeholder functions - implement actual logic later
-  const login = async (email, password) => {
-    // Temporary implementation
-    console.log("Login attempt with:", email, password);
-    setIsAuthenticated(true);
-    setUser({ email });
-    return true;
-  };
+  const navigate = useNavigate();
 
-  const register = async (userData) => {
-    // Temporary implementation
-    console.log("Register attempt with:", userData);
-    return true;
-  };
-
-  const logout = () => {
-    // Temporary implementation
-    setUser(null);
-    setIsAuthenticated(false);
-  };
-
+  // Load user from token on initial load
   useEffect(() => {
-    // Simulate checking for stored authentication
-    setLoading(false);
-  }, []);
+    const loadUser = async () => {
+      if (token) {
+        try {
+          // Set token in api headers
+          api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+          // Get user profile
+          const res = await api.get("/auth/profile");
+          setUser(res.data.data);
+          setError(null);
+        } catch (err) {
+          console.error("Error loading user:", err);
+          localStorage.removeItem("token");
+          setToken(null);
+          setUser(null);
+          setError("Session expired. Please login again.");
+        }
+      }
+
+      setLoading(false);
+    };
+
+    loadUser();
+  }, [token]);
+
+  // Register user
+  const register = async (userData) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await api.post("/auth/register", userData);
+
+      // Automatically log in after registration
+      const loginRes = await api.post("/auth/login", {
+        email: userData.email,
+        password: userData.password,
+      });
+
+      const { token: newToken, user: userData } = loginRes.data.data;
+
+      // Save token to localStorage
+      localStorage.setItem("token", newToken);
+      setToken(newToken);
+      setUser(userData);
+
+      // Set token in api headers
+      api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+
+      return true;
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError(
+        err.response?.data?.message || "Registration failed. Please try again."
+      );
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Login user
+  const login = async (email, password) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await api.post("/auth/login", { email, password });
+
+      const { token: newToken, user: userData } = res.data.data;
+
+      // Save token to localStorage
+      localStorage.setItem("token", newToken);
+      setToken(newToken);
+      setUser(userData);
+
+      // Set token in api headers
+      api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+
+      return true;
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(
+        err.response?.data?.message ||
+          "Login failed. Please check your credentials."
+      );
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Logout user
+  const logout = () => {
+    // Remove token from localStorage
+    localStorage.removeItem("token");
+
+    // Remove token from api headers
+    delete api.defaults.headers.common["Authorization"];
+
+    // Clear state
+    setToken(null);
+    setUser(null);
+
+    // Redirect to login page
+    navigate("/login");
+  };
+
+  // Clear error
+  const clearError = () => {
+    setError(null);
+  };
+
+  // Context value
+  const contextValue = {
+    user,
+    token,
+    loading,
+    error,
+    isAuthenticated: !!token,
+    register,
+    login,
+    logout,
+    clearError,
+  };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        error,
-        isAuthenticated,
-        login,
-        register,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
 
+// Custom hook for using the auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
+
   return context;
 };
 
