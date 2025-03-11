@@ -148,15 +148,15 @@ exports.getReviewHistory = async (req, res, next) => {
       WHERE rh.user_id = ? 
       AND rh.review_time >= DATE_SUB(NOW(), INTERVAL ? DAY)
       ORDER BY rh.review_time DESC
-      LIMIT ? OFFSET ?
     `;
 
-    const history = await db.query(historyQuery, [
-      userId,
-      parseInt(days),
+    // Use the new queryWithLimit function for review history
+    const history = await db.queryWithLimit(
+      historyQuery,
+      [userId, parseInt(days)],
       parseInt(limit),
-      parseInt(offset),
-    ]);
+      parseInt(offset)
+    );
 
     // Get total count
     const totalCountResult = await db.query(
@@ -166,6 +166,7 @@ exports.getReviewHistory = async (req, res, next) => {
        AND review_time >= DATE_SUB(NOW(), INTERVAL ? DAY)`,
       [userId, parseInt(days)]
     );
+
     const totalCount = totalCountResult[0].count;
 
     res.status(200).json({
