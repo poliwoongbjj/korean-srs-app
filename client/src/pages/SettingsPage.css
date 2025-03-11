@@ -1,0 +1,266 @@
+/* pages/SettingsPage.css - Styles for settings page */
+
+.settings-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.settings-container {
+  display: flex;
+  gap: 32px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Sidebar */
+.settings-sidebar {
+  width: 280px;
+  background-color: #f8f9fa;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 80vh;
+}
+
+.settings-sidebar h1 {
+  margin: 0 0 24px 0;
+  font-size: 24px;
+  color: #343a40;
+}
+
+.settings-tabs {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 auto 0;
+}
+
+.settings-tabs li {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #495057;
+  display: flex;
+  align-items: center;
+}
+
+.settings-tabs li i {
+  margin-right: 12px;
+  width: 20px;
+  text-align: center;
+}
+
+.settings-tabs li:hover {
+  background-color: #e9ecef;
+}
+
+.settings-tabs li.active {
+  background-color: #e7f5ff;
+  color: #4263eb;
+  font-weight: 500;
+}
+
+.sidebar-actions {
+  margin-top: 24px;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #495057;
+}
+
+.logout-btn i {
+  margin-right: 8px;
+}
+
+.logout-btn:hover {
+  background-color: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+/* Content */
+.settings-content {
+  flex: 1;
+  padding: 32px;
+}
+
+.settings-section {
+  max-width: 600px;
+}
+
+.settings-section h2 {
+  margin: 0 0 24px 0;
+  font-size: 20px;
+  color: #343a40;
+}
+
+.success-message {
+  background-color: #d3f9d8;
+  color: #2b8a3e;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.success-message:before {
+  content: "✓";
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+/* Form styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #495057;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #4263eb;
+  box-shadow: 0 0 0 3px rgba(66, 99, 235, 0.2);
+}
+
+.form-help {
+  font-size: 14px;
+  color: #6c757d;
+  margin-top: 8px;
+}
+
+.form-divider {
+  margin: 24px 0;
+  border-top: 1px solid #e9ecef;
+  position: relative;
+  text-align: center;
+}
+
+.form-divider span {
+  position: relative;
+  top: -12px;
+  background-color: white;
+  padding: 0 12px;
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.form-actions {
+  margin-top: 32px;
+}
+
+.save-btn {
+  background-color: #4263eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-btn:hover {
+  background-color: #364fc7;
+}
+
+/* Warning section */
+.warning-section {
+  border: 1px solid #ffe3e3;
+  border-radius: 8px;
+  padding: 24px;
+  background-color: #fff5f5;
+}
+
+.warning-section h3 {
+  margin: 0 0 16px 0;
+  color: #e03131;
+}
+
+.warning-section p {
+  margin: 0 0 20px 0;
+  color: #495057;
+}
+
+.delete-account-btn {
+  background-color: #fa5252;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.delete-account-btn:hover {
+  background-color: #e03131;
+}
+
+/* Media queries */
+@media (max-width: 992px) {
+  .settings-container {
+    flex-direction: column;
+  }
+  
+  .settings-sidebar {
+    width: 100%;
+    min-height: auto;
+    padding: 24px;
+  }
+  
+  .settings-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .settings-tabs li {
+    margin-bottom: 0;
+  }
+  
+  .sidebar-actions {
+    margin-top: 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .settings-content {
+    padding: 24px 16px;
+  }
+  
+  .settings-tabs {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,127 @@
+/* pages/DeckForm.css - Styles for deck form pages */
+
+.deck-form-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.deck-form-container {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 32px;
+}
+
+.deck-form-container h1 {
+  margin: 0 0 24px 0;
+  font-size: 24px;
+  color: #343a40;
+}
+
+.form-error {
+  background-color: #fff5f5;
+  color: #fa5252;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.deck-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #495057;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #4263eb;
+  box-shadow: 0 0 0 3px rgba(66, 99, 235, 0.2);
+}
+
+.form-group input.error,
+.form-group textarea.error {
+  border-color: #fa5252;
+}
+
+.error-message {
+  color: #fa5252;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.primary-btn,
+.secondary-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.primary-btn {
+  background-color: #4263eb;
+  color: white;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background-color: #364fc7;
+}
+
+.secondary-btn {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.secondary-btn:hover:not(:disabled) {
+  background-color: #dee2e6;
+}
+
+.primary-btn:disabled,
+.secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .deck-form-container {
+    padding: 24px;
+  }
+  
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+}
