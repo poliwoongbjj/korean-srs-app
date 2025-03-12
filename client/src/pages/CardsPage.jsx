@@ -1,6 +1,6 @@
 // pages/CardsPage.jsx - Cards browsing and management page
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import cardsService from "@/services/cards.service";
 import categoriesService from "@/services/categories.service";
@@ -12,20 +12,33 @@ const CardsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentSearchTerm, setCurrentSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCards, setTotalCards] = useState(0);
   const cardsPerPage = 12;
 
-  // Load cards and categories
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+  const searchInputRef = useRef(null);
 
-        // Fetch categories
+  // Load categories on initial render
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
         const categoriesResponse = await categoriesService.getAllCategories();
         setCategories(categoriesResponse.data);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Load cards when search, category, or page changes
+  useEffect(() => {
+    const fetchCards = async () => {
+      try {
+        setLoading(true);
 
         // Fetch cards with pagination and filters
         const params = {
@@ -33,8 +46,8 @@ const CardsPage = () => {
           offset: (currentPage - 1) * cardsPerPage,
         };
 
-        if (searchTerm) {
-          params.search = searchTerm;
+        if (currentSearchTerm) {
+          params.search = currentSearchTerm;
         }
 
         if (selectedCategory) {
@@ -45,20 +58,30 @@ const CardsPage = () => {
         setCards(cardsResponse.data);
         setTotalCards(cardsResponse.total);
       } catch (err) {
-        console.error("Error fetching data:", err);
+        console.error("Error fetching cards:", err);
         setError("Failed to load cards. Please try again.");
       } finally {
         setLoading(false);
+        // Focus back on the search input if it was active
+        if (document.activeElement === searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
       }
     };
 
-    fetchData();
-  }, [currentPage, searchTerm, selectedCategory]);
+    fetchCards();
+  }, [currentPage, currentSearchTerm, selectedCategory]);
 
   // Handle search
   const handleSearch = (e) => {
     e.preventDefault();
+    setCurrentSearchTerm(searchTerm);
     setCurrentPage(1); // Reset to first page when searching
+  };
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   // Handle category change
@@ -91,7 +114,7 @@ const CardsPage = () => {
   // Calculate total pages
   const totalPages = Math.ceil(totalCards / cardsPerPage);
 
-  if (loading) {
+  if (loading && cards.length === 0) {
     return (
       <div className="cards-page">
         <div className="loading-container">
@@ -102,7 +125,7 @@ const CardsPage = () => {
     );
   }
 
-  if (error) {
+  if (error && cards.length === 0) {
     return (
       <div className="cards-page">
         <div className="error-container">
@@ -134,11 +157,12 @@ const CardsPage = () => {
             type="text"
             placeholder="Search cards..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             className="search-input"
+            ref={searchInputRef}
           />
           <button type="submit" className="search-btn">
-            <i className="fa fa-search"></i>
+            <i className="fa fa-search"></i> Search
           </button>
         </form>
 
@@ -157,6 +181,12 @@ const CardsPage = () => {
           </select>
         </div>
       </div>
+
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+        </div>
+      )}
 
       {cards.length === 0 ? (
         <div className="empty-cards">
