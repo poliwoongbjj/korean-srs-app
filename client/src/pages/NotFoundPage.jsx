@@ -1,3 +1,9 @@
+// pages/NotFoundPage.jsx - 404 Not Found page
+
+import React from "react";
+import { Link } from "react-router-dom"; // Add this import
+import "./NotFoundPage.css";
+
 const NotFoundPage = () => {
   return (
     <div className="not-found-page">

@@ -15,6 +15,7 @@ import RegisterPage from "@pages/RegisterPage";
 import DashboardPage from "@pages/DashboardPage";
 import StudyPage from "@pages/StudyPage";
 import CardsPage from "@pages/CardsPage";
+import DecksPage from "@pages/DecksPage";
 import DeckPage from "@pages/DeckPage";
 import NewCardPage from "@pages/NewCardPage";
 import NewDeckPage from "@pages/NewDeckPage";
@@ -72,6 +73,14 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <NewCardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/decks"
+                element={
+                  <ProtectedRoute>
+                    <DecksPage />
                   </ProtectedRoute>
                 }
               />

@@ -42,36 +42,34 @@ const DashboardPage = () => {
           // Get other data...
           // If you don't have these endpoints implemented yet, comment them out
 
-          /*
           // Get due cards count
-          const dueResponse = await api.get('/cards/study/due');
-          console.log('Due cards response:', dueResponse.data);
+          const dueResponse = await api.get("/cards/study/due");
+          console.log("Due cards response:", dueResponse.data);
           const dueCount = dueResponse.data.count;
-          
+
           // Get new cards count
-          const newResponse = await api.get('/cards/study/new');
-          console.log('New cards response:', newResponse.data);
+          const newResponse = await api.get("/cards/study/new");
+          console.log("New cards response:", newResponse.data);
           const newCount = newResponse.data.count;
-          
+
           // Get total cards count
-          const allCardsResponse = await api.get('/cards');
-          console.log('All cards response:', allCardsResponse.data);
+          const allCardsResponse = await api.get("/cards");
+          console.log("All cards response:", allCardsResponse.data);
           const totalCount = allCardsResponse.data.total;
-          
+
           // Update stats
           setStats({
             dueCards: dueCount,
             newCards: newCount,
             totalCards: totalCount,
             streak: statsResponse.data.data.streak_days || 0,
-            reviewsToday: statsResponse.data.data.reviews_today || 0
+            reviewsToday: statsResponse.data.data.reviews_today || 0,
           });
-          
+
           // Get decks
-          const decksResponse = await api.get('/decks');
-          console.log('Decks response:', decksResponse.data);
+          const decksResponse = await api.get("/decks");
+          console.log("Decks response:", decksResponse.data);
           setDecks(decksResponse.data.data);
-          */
 
           // For now, just set some placeholder data
           setStats({
