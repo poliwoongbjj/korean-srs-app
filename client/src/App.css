@@ -73,14 +73,14 @@ body {
   padding-bottom: 40px;
 }
 
-/* Ensure all page containers are centered and have proper width */
+/* Base content containers */
+.container,
 .cards-page, .decks-page, .dashboard-page, .stats-page, .settings-page, 
 .study-page, .card-form-page, .deck-form-page, .deck-page, .auth-page,
 .not-found-page {
   width: 100%;
-  max-width: 1200px;
-  padding-left: 20px;
-  padding-right: 20px;
+  margin-left: auto;
+  margin-right: auto;
   box-sizing: border-box;
 }
 
@@ -294,21 +294,43 @@ label {
   }
 }
 
-/* For medium screens */
+/* Force larger widths at different breakpoints */
 @media (min-width: 769px) and (max-width: 1200px) {
+  .container,
   .header-content, 
   .footer-content,
   .footer .container,
   .cards-page, .decks-page, .dashboard-page, .stats-page, .settings-page, 
-  .study-page, .card-form-page, .deck-form-page, .deck-page, .auth-page,
+  .card-form-page, .deck-form-page, .deck-page, .auth-page,
   .not-found-page {
-    max-width: 960px;
+    width: 90% !important;
+    max-width: 90% !important;
+    min-width: 768px !important;
+  }
+  
+  .study-page {
+    width: 80% !important;
+    max-width: 80% !important;
+    min-width: 768px !important;
   }
 }
 
-/* For large screens */
 @media (min-width: 1201px) {
+  .container,
+  .header-content, 
+  .footer-content,
+  .footer .container,
+  .cards-page, .decks-page, .dashboard-page, .stats-page, .settings-page, 
+  .card-form-page, .deck-form-page, .deck-page, .auth-page,
+  .not-found-page {
+    width: 80% !important;
+    max-width: 1800px !important;
+    min-width: 1200px !important;
+  }
+  
   .study-page {
-    max-width: 900px;
+    width: 70% !important;
+    max-width: 1400px !important;
+    min-width: 1000px !important;
   }
 }
