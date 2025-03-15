@@ -16,6 +16,7 @@ const StudyPage = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [studyOrder, setStudyOrder] = useState("random");
   const [studyComplete, setStudyComplete] = useState(false);
   const [stats, setStats] = useState({
     totalCards: 0,
@@ -33,52 +34,64 @@ const StudyPage = () => {
     }
   }, [isAuthenticated, navigate, deckId]);
 
-  // Load cards
   useEffect(() => {
-    const fetchCards = async () => {
+    const fetchUserPreferences = async () => {
       try {
-        setLoading(true);
-
-        // Get due cards
-        const dueResponse = await cardsService.getDueCards({
-          limit: 20,
-          deckId: deckId || undefined,
-        });
-
-        let studyCards = dueResponse.data;
-
-        // If not enough due cards, get new cards
-        if (studyCards.length < 10) {
-          const newResponse = await cardsService.getNewCards({
-            limit: 10 - studyCards.length,
-            deckId: deckId || undefined,
-          });
-
-          studyCards = [...studyCards, ...newResponse.data];
-        }
-
-        // Add index and total count to each card
-        const cardsWithMeta = studyCards.map((card, index) => ({
-          ...card,
-          currentIndex: index + 1,
-          totalCards: studyCards.length,
-        }));
-
-        setCards(cardsWithMeta);
-        setStats((prev) => ({
-          ...prev,
-          totalCards: cardsWithMeta.length,
-        }));
+        const preferencesResponse = await settingsService.getUserPreferences();
+        setStudyOrder(preferencesResponse.data.studyOrder || "random");
       } catch (err) {
-        console.error("Error loading cards:", err);
-        setError("Failed to load cards. Please try again.");
-      } finally {
-        setLoading(false);
+        console.error("Error loading preferences:", err);
       }
     };
 
-    fetchCards();
-  }, [deckId]);
+    fetchUserPreferences();
+  }, []);
+
+  // Load cards
+
+  const fetchCards = async () => {
+    try {
+      setLoading(true);
+
+      // Get due cards with order preference
+      const dueResponse = await cardsService.getDueCards({
+        limit: 20,
+        deckId: deckId || undefined,
+        orderBy: studyOrder,
+      });
+
+      let studyCards = dueResponse.data;
+
+      // If not enough due cards, get new cards
+      if (studyCards.length < 10) {
+        const newResponse = await cardsService.getNewCards({
+          limit: 10 - studyCards.length,
+          deckId: deckId || undefined,
+          orderBy: studyOrder,
+        });
+
+        studyCards = [...studyCards, ...newResponse.data];
+      }
+
+      // Add index and total count to each card
+      const cardsWithMeta = studyCards.map((card, index) => ({
+        ...card,
+        currentIndex: index + 1,
+        totalCards: studyCards.length,
+      }));
+
+      setCards(cardsWithMeta);
+      setStats((prev) => ({
+        ...prev,
+        totalCards: cardsWithMeta.length,
+      }));
+    } catch (err) {
+      console.error("Error loading cards:", err);
+      setError("Failed to load cards. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handle card review
   const handleReview = async (cardId, rating, timeTakenMs) => {

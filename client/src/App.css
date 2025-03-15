@@ -247,3 +247,21 @@ label {
     padding: 8px 16px;
   }
 }
+
+/* For medium screens */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .container {
+    max-width: 960px;
+  }
+  
+  /* Add other medium screen specific styles */
+}
+
+/* For large screens */
+@media (min-width: 1201px) {
+  .container {
+    max-width: 1200px;
+  }
+  
+  /* Add other large screen specific styles */
+}

@@ -194,14 +194,14 @@ class SpacedRepetitionService {
    * @param {number} deckId - Optional deck ID to filter by
    * @returns {Promise<Array>} - Array of due cards
    */
-  async getDueCards(userId, limit = 20, deckId = null) {
+  async getDueCards(userId, limit = 20, deckId = null, orderBy = "random") {
     try {
       let query = `
-      SELECT c.*, uc.ease_factor, uc.review_interval, uc.repetitions, uc.next_review
-      FROM cards c
-      JOIN user_cards uc ON c.id = uc.card_id
-      WHERE uc.user_id = ? AND uc.next_review <= NOW()
-    `;
+        SELECT c.*, uc.ease_factor, uc.review_interval, uc.repetitions, uc.next_review
+        FROM cards c
+        JOIN user_cards uc ON c.id = uc.card_id
+        WHERE uc.user_id = ? AND uc.next_review <= NOW()
+      `;
 
       const params = [userId];
 
@@ -211,8 +211,17 @@ class SpacedRepetitionService {
         params.push(deckId);
       }
 
-      // Order by cards that have been reviewed the least first, then by due date
-      query += ` ORDER BY uc.repetitions ASC, uc.next_review ASC`;
+      // Order based on preference
+      if (orderBy === "added") {
+        query += ` ORDER BY CASE 
+                  WHEN dc.deck_id IS NOT NULL THEN dc.added_at 
+                  ELSE uc.created_at 
+                END ASC, uc.repetitions ASC`;
+      } else {
+        // Default to the existing ordering
+        // Order by cards that have been reviewed the least first, then by due date
+        query += ` ORDER BY uc.repetitions ASC, uc.next_review ASC`;
+      }
 
       // Use the new queryWithLimit function
       return await db.queryWithLimit(query, params, limit);
@@ -230,17 +239,18 @@ class SpacedRepetitionService {
    * @param {number} deckId - Optional deck ID to filter by
    * @returns {Promise<Array>} - Array of new cards
    */
-  async getNewCards(userId, limit = 10, deckId = null) {
+  async getNewCards(userId, limit = 10, deckId = null, orderBy = "random") {
     try {
       let query = `
-      SELECT c.*
-      FROM cards c
-      WHERE c.id NOT IN (
-        SELECT card_id FROM user_cards WHERE user_id = ?
-      )
-    `;
+        SELECT c.*
+        FROM cards c
+        LEFT JOIN deck_cards dc ON c.id = dc.card_id AND dc.deck_id = ?
+        WHERE c.id NOT IN (
+          SELECT card_id FROM user_cards WHERE user_id = ?
+        )
+      `;
 
-      const params = [userId];
+      const params = [deckId || 0, userId];
 
       // If deck ID is provided, filter by deck
       if (deckId) {
@@ -248,8 +258,13 @@ class SpacedRepetitionService {
         params.push(deckId);
       }
 
-      // Order randomly to get a mix of cards
-      query += ` ORDER BY RAND()`;
+      // Order based on preference
+      if (orderBy === "added") {
+        query += ` ORDER BY CASE WHEN dc.deck_id IS NOT NULL THEN dc.added_at ELSE c.created_at END ASC`;
+      } else {
+        // Random order
+        query += ` ORDER BY RAND()`;
+      }
 
       // Use the new queryWithLimit function
       return await db.queryWithLimit(query, params, limit);

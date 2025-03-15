@@ -1,4 +1,14 @@
 -- Database schema for Korean Learning App
+-- Drop tables if they exist (in reverse order of creation to respect foreign keys)
+DROP TABLE IF EXISTS user_stats;
+DROP TABLE IF EXISTS deck_cards;
+DROP TABLE IF EXISTS decks;
+DROP TABLE IF EXISTS review_history;
+DROP TABLE IF EXISTS user_cards;
+DROP TABLE IF EXISTS user_preferences;
+DROP TABLE IF EXISTS cards;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS users;
 
 -- Users table
 CREATE TABLE users (
@@ -90,6 +100,15 @@ CREATE TABLE user_stats (
   total_reviews INT DEFAULT 0,
   streak_days INT DEFAULT 0,
   last_study_date DATE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE user_preferences (
+  user_id INT PRIMARY KEY,
+  new_cards_per_day INT DEFAULT 10,
+  reviews_per_day INT DEFAULT 50,
+  study_order VARCHAR(20) DEFAULT 'random',
+  theme VARCHAR(20) DEFAULT 'light',
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

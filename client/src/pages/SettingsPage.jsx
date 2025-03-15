@@ -1,8 +1,9 @@
 // pages/SettingsPage.jsx - User settings page
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import settingsService from "@/services/settings.service";
 import "./SettingsPage.css";
 
 const SettingsPage = () => {
@@ -11,15 +12,16 @@ const SettingsPage = () => {
 
   const [activeTab, setActiveTab] = useState("account");
   const [successMessage, setSuccessMessage] = useState("");
+  const [error, setError] = useState(null);
 
-  // Theme options (for future implementation)
+  // Theme options
   const themes = [
     { id: "light", name: "Light" },
     { id: "dark", name: "Dark" },
     { id: "system", name: "System Default" },
   ];
 
-  // Mock account form - would be connected to real API in production
+  // Account form
   const [accountForm, setAccountForm] = useState({
     username: user?.username || "",
     email: user?.email || "",
@@ -28,12 +30,36 @@ const SettingsPage = () => {
     confirmPassword: "",
   });
 
-  // Mock study preferences - would be connected to real API in production
+  // Study preferences
   const [studyPreferences, setStudyPreferences] = useState({
     newCardsPerDay: 10,
     reviewsPerDay: 50,
+    studyOrder: "random",
     theme: "light",
   });
+
+  // Load user preferences
+  useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        const response = await settingsService.getUserPreferences();
+        console.log("Loaded preferences:", response);
+
+        if (response.success && response.data) {
+          setStudyPreferences({
+            newCardsPerDay: response.data.newCardsPerDay,
+            reviewsPerDay: response.data.reviewsPerDay,
+            studyOrder: response.data.studyOrder,
+            theme: response.data.theme,
+          });
+        }
+      } catch (err) {
+        console.error("Error loading preferences:", err);
+      }
+    };
+
+    loadPreferences();
+  }, []);
 
   // Handle account form changes
   const handleAccountChange = (e) => {
@@ -54,19 +80,67 @@ const SettingsPage = () => {
   };
 
   // Handle account form submission
-  const handleAccountSubmit = (e) => {
+  const handleAccountSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, this would call an API to update the user's account
-    setSuccessMessage("Account settings updated successfully.");
-    setTimeout(() => setSuccessMessage(""), 3000);
+    setError(null);
+
+    try {
+      // Only send username and email, not password
+      const profileData = {
+        username: accountForm.username,
+        email: accountForm.email,
+      };
+
+      await settingsService.updateUserProfile(profileData);
+
+      // If there's a password change, send it separately
+      if (accountForm.currentPassword && accountForm.newPassword) {
+        if (accountForm.newPassword !== accountForm.confirmPassword) {
+          setError("New passwords do not match");
+          return;
+        }
+
+        await settingsService.updatePassword({
+          currentPassword: accountForm.currentPassword,
+          newPassword: accountForm.newPassword,
+        });
+
+        // Clear password fields
+        setAccountForm({
+          ...accountForm,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      }
+
+      setSuccessMessage("Account settings updated successfully.");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      console.error("Error updating account:", err);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to update account settings."
+      );
+    }
   };
 
   // Handle study preferences submission
-  const handlePreferencesSubmit = (e) => {
+  const handlePreferencesSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, this would call an API to update the user's preferences
-    setSuccessMessage("Study preferences updated successfully.");
-    setTimeout(() => setSuccessMessage(""), 3000);
+    setError(null);
+
+    try {
+      await settingsService.updateStudyPreferences(studyPreferences);
+      setSuccessMessage("Study preferences updated successfully.");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      console.error("Error updating preferences:", err);
+      setError(
+        err.response?.data?.message || "Failed to update study preferences."
+      );
+    }
   };
 
   // Handle logout
@@ -188,6 +262,8 @@ const SettingsPage = () => {
                   />
                 </div>
 
+                {error && <div className="error-message">{error}</div>}
+
                 <div className="form-actions">
                   <button type="submit" className="save-btn">
                     Save Changes
@@ -230,6 +306,22 @@ const SettingsPage = () => {
                   />
                   <div className="form-help">
                     Maximum number of reviews to show each day.
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="studyOrder">Study Order</label>
+                  <select
+                    id="studyOrder"
+                    name="studyOrder"
+                    value={studyPreferences.studyOrder}
+                    onChange={handlePreferencesChange}
+                  >
+                    <option value="added">Order Added</option>
+                    <option value="random">Random</option>
+                  </select>
+                  <div className="form-help">
+                    Choose how cards are ordered during study sessions.
                   </div>
                 </div>
 

@@ -16,6 +16,7 @@ var decksRoutes = require("./routes/decks.routes");
 var reviewsRoutes = require("./routes/reviews.routes");
 var statsRoutes = require("./routes/stats.routes");
 var categoriesRoutes = require("./routes/categories.routes");
+var settingsRoutes = require("./routes/settings.routes");
 
 var app = express();
 
@@ -39,6 +40,7 @@ app.use("/api/decks", decksRoutes);
 app.use("/api/reviews", reviewsRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/categories", categoriesRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // Route to check server health
 app.get("/api/health", (req, res) => {
