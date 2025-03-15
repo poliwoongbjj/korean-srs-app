@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import StudyCard from "@components/Card/StudyCard";
 import cardsService from "@services/cards.service";
-import settingsService from "@services/settings.service"; // Added missing import
+import settingsService from "@services/settings.service";
+import statsService from "@/services/stats.service";
 import { useAuth } from "@contexts/AuthContext";
 import "./StudyPage.css";
 
@@ -103,6 +104,7 @@ const StudyPage = () => {
 
   // Handle card review
   const handleReview = async (cardId, rating, timeTakenMs) => {
+    console.log("Card ID being sent:", cards[currentCardIndex].id);
     try {
       // Update card review in API
       await cardsService.reviewCard(cardId, {
@@ -143,6 +145,24 @@ const StudyPage = () => {
     } catch (err) {
       console.error("Error reviewing card:", err);
       setError("Failed to save review. Please try again.");
+    }
+  };
+
+  const restudyFailedCards = () => {
+    // Use the stats state which has been tracking ratings during the session
+    const failedCards = cards.filter((card, index) => {
+      // Check if this card was rated as "Again" (rating 1) in this session
+      return stats.again > 0 && index < stats.reviewed;
+    });
+
+    if (failedCards.length > 0) {
+      setCards(failedCards);
+      setCurrentCardIndex(0);
+      setStudyComplete(false);
+    } else {
+      // If no failed cards tracked in this session, just restart with all cards
+      setCurrentCardIndex(0);
+      setStudyComplete(false);
     }
   };
 
@@ -244,9 +264,12 @@ const StudyPage = () => {
           </div>
           <div className="action-buttons">
             <button className="primary-btn" onClick={resetStudy}>
-              Study Again
+              Study New Cards
             </button>
-            <button className="secondary-btn" onClick={goToDashboard}>
+            <button className="secondary-btn" onClick={restudyFailedCards}>
+              Restudy Cards
+            </button>
+            <button className="tertiary-btn" onClick={goToDashboard}>
               Back to Dashboard
             </button>
           </div>

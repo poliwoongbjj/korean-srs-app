@@ -1,5 +1,3 @@
-// components/Card/StudyCard.jsx - Study card component for reviews
-
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import "./StudyCard.css";
@@ -7,12 +5,22 @@ import "./StudyCard.css";
 const StudyCard = ({ card, onReview, isLast }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [startTime, setStartTime] = useState(null);
+  const [userInput, setUserInput] = useState("");
+  const [changingCard, setChangingCard] = useState(false);
+  const [displayedCard, setDisplayedCard] = useState(card);
 
-  // Set start time when card is shown
+  // Handle card changes more gracefully
   useEffect(() => {
-    setIsFlipped(false);
+    // Set start time immediately when component mounts
     setStartTime(Date.now());
-  }, [card]);
+    setIsFlipped(false);
+    setUserInput("");
+
+    return () => {
+      // Clean up when component unmounts
+      setStartTime(null);
+    };
+  }, [displayedCard.id]); // Depend on card ID, not the entire card object
 
   // Toggle card flip
   const flipCard = () => {
@@ -28,26 +36,31 @@ const StudyCard = ({ card, onReview, isLast }) => {
     }
 
     // Calculate time taken in milliseconds
-    const timeTakenMs = Date.now() - startTime;
+    // Make sure we're using the correct time calculation
+    const currentTime = Date.now();
+    const timeTakenMs = startTime ? currentTime - startTime : 5000; // Default to 5 seconds if startTime not set
 
-    // Call onReview callback with rating and time taken
-    onReview(card.id, rating, timeTakenMs);
+    // Add a sanity check to prevent absurdly large values
+    const cappedTimeTaken = Math.min(timeTakenMs, 300000); // Cap at 5 minutes (300,000ms)
+
+    // Call onReview callback with rating and capped time taken
+    onReview(displayedCard.id, rating, cappedTimeTaken);
   };
 
   // Play audio if available
   const playAudio = () => {
-    if (card.audio_url) {
-      const audio = new Audio(card.audio_url);
+    if (displayedCard.audio_url) {
+      const audio = new Audio(displayedCard.audio_url);
       audio.play();
     }
   };
 
   // Get next interval based on SRS data
   const getNextInterval = (rating) => {
-    if (!card.review_interval) return "1 day";
+    if (!displayedCard.review_interval) return "1 day";
 
-    let interval = card.review_interval;
-    const ease = parseFloat(card.ease_factor || 2.5);
+    let interval = displayedCard.review_interval;
+    const ease = parseFloat(displayedCard.ease_factor || 2.5);
 
     switch (rating) {
       case 1: // Again
@@ -74,21 +87,20 @@ const StudyCard = ({ card, onReview, isLast }) => {
 
   return (
     <div className="study-card-container">
-      <motion.div
-        className={`study-card ${isFlipped ? "flipped" : ""}`}
+      <div
+        className={`study-card ${isFlipped ? "flipped" : ""} ${
+          changingCard ? "changing-card" : ""
+        }`}
         onClick={flipCard}
-        initial={{ rotateY: 0 }}
-        animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.6 }}
       >
         {/* Front Side (Korean) */}
         <div className="card-front">
           <div className="card-content">
-            <h2 className="korean-text">{card.korean_text}</h2>
-            {card.romanization && (
-              <p className="romanization">{card.romanization}</p>
+            <h2 className="korean-text">{displayedCard.korean_text}</h2>
+            {displayedCard.romanization && (
+              <p className="romanization">{displayedCard.romanization}</p>
             )}
-            {card.audio_url && (
+            {displayedCard.audio_url && (
               <button
                 className="audio-btn"
                 onClick={(e) => {
@@ -106,23 +118,27 @@ const StudyCard = ({ card, onReview, isLast }) => {
         {/* Back Side (English) */}
         <div className="card-back">
           <div className="card-content">
-            <h2 className="english-text">{card.english_text}</h2>
-            {card.example_sentence && (
-              <p className="example-sentence">{card.example_sentence}</p>
+            <h2 className="english-text">{displayedCard.english_text}</h2>
+            {displayedCard.example_sentence && (
+              <p className="example-sentence">
+                {displayedCard.example_sentence}
+              </p>
             )}
-            {card.pronunciation_notes && (
-              <p className="pronunciation-notes">{card.pronunciation_notes}</p>
+            {displayedCard.pronunciation_notes && (
+              <p className="pronunciation-notes">
+                {displayedCard.pronunciation_notes}
+              </p>
             )}
-            {card.image_url && (
+            {displayedCard.image_url && (
               <img
-                src={card.image_url}
-                alt={card.english_text}
+                src={displayedCard.image_url}
+                alt={displayedCard.english_text}
                 className="card-image"
               />
             )}
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Rating buttons (shown after card is flipped) */}
       <div className={`rating-buttons ${isFlipped ? "visible" : ""}`}>
@@ -157,9 +173,9 @@ const StudyCard = ({ card, onReview, isLast }) => {
       </div>
 
       {/* Progress indicator */}
-      {card.totalCards && (
+      {displayedCard.totalCards && (
         <div className="progress-indicator">
-          Card {card.currentIndex} of {card.totalCards}
+          Card {displayedCard.currentIndex} of {displayedCard.totalCards}
           {isLast && <span className="last-card-indicator"> (Last card)</span>}
         </div>
       )}

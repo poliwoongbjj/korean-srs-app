@@ -31,13 +31,13 @@ class SpacedRepetitionService {
   calculateNextReview(cardStats, rating) {
     let { ease_factor, review_interval, repetitions } = cardStats;
     let newEase = ease_factor;
-    let newInterval = review_interval;
-    let newRepetitions = repetitions;
+    let newInterval = 0; // Default to 0 instead of undefined
+    let newRepetitions = 0; // Default to 0 instead of undefined
 
-    // Convert to numbers to be safe
-    ease_factor = parseFloat(ease_factor);
-    review_interval = parseInt(review_interval, 10);
-    repetitions = parseInt(repetitions, 10);
+    // Convert to numbers with default values for null/undefined
+    ease_factor = parseFloat(ease_factor) || 2.5;
+    review_interval = parseInt(review_interval, 10) || 0;
+    repetitions = parseInt(repetitions, 10) || 0;
 
     switch (rating) {
       case this.RATING.AGAIN: // Failed - reset
@@ -114,66 +114,114 @@ class SpacedRepetitionService {
    */
   async updateCardProgress(userId, cardId, rating, timeTakenMs = 0) {
     try {
+      console.log("Updating card progress:", {
+        userId,
+        cardId,
+        rating,
+        timeTakenMs,
+      });
+
       // Get current card stats
       const userCardRows = await db.query(
         "SELECT * FROM user_cards WHERE user_id = ? AND card_id = ?",
         [userId, cardId]
       );
 
+      console.log("User card rows:", userCardRows);
+
       let userCard;
 
       // If card doesn't exist for this user, create it
       if (userCardRows.length === 0) {
-        await db.query(
-          "INSERT INTO user_cards (user_id, card_id, ease_factor, review_interval, repetitions) VALUES (?, ?, 2.5, 0, 0)",
-          [userId, cardId]
-        );
+        console.log("Creating new user card entry");
 
-        userCard = {
-          user_id: userId,
-          card_id: cardId,
-          ease_factor: 2.5,
-          review_interval: 0,
-          repetitions: 0,
-          last_review: new Date(),
-          next_review: new Date(),
-        };
+        try {
+          await db.query(
+            "INSERT INTO user_cards (user_id, card_id, ease_factor, review_interval, repetitions) VALUES (?, ?, 2.5, 0, 0)",
+            [userId, cardId]
+          );
+
+          userCard = {
+            user_id: userId,
+            card_id: cardId,
+            ease_factor: 2.5,
+            review_interval: 0,
+            repetitions: 0,
+            last_review: new Date(),
+            next_review: new Date(),
+          };
+        } catch (insertError) {
+          console.error("Error creating user_card:", insertError);
+          throw insertError;
+        }
       } else {
         userCard = userCardRows[0];
       }
 
       // Calculate new SRS data
       const newStats = this.calculateNextReview(userCard, rating);
+      console.log("New stats calculated:", newStats);
 
-      // Update card stats in database
-      await db.query(
-        `UPDATE user_cards 
-   SET ease_factor = ?, 
-       review_interval = ?, 
-       repetitions = ?, 
-       last_review = ?, 
-       next_review = ?,
-       updated_at = CURRENT_TIMESTAMP
-   WHERE user_id = ? AND card_id = ?`,
-        [
-          newStats.ease_factor || null,
-          newStats.review_interval || null,
-          newStats.repetitions || null,
-          newStats.last_review || null,
-          newStats.next_review || null,
-          userId,
-          cardId,
-        ]
-      );
+      // Update card stats in database with explicit NULL handling
+      try {
+        await db.query(
+          `UPDATE user_cards 
+           SET ease_factor = ?, 
+               review_interval = ?, 
+               repetitions = ?, 
+               last_review = ?, 
+               next_review = ?,
+               updated_at = CURRENT_TIMESTAMP
+           WHERE user_id = ? AND card_id = ?`,
+          [
+            newStats.ease_factor || 2.5, // Default ease factor
+            newStats.review_interval || 0, // Ensure integer
+            newStats.repetitions || 0, // Ensure integer
+            newStats.last_review || new Date(), // Use current date if missing
+            newStats.next_review || new Date(Date.now() + 86400000), // Default to tomorrow if invalid
+            userId,
+            cardId,
+          ]
+        );
+      } catch (updateError) {
+        console.error("Error updating user_cards:", updateError);
+        throw updateError;
+      }
 
       // Record review history
-      await db.query(
-        "INSERT INTO review_history (user_id, card_id, rating, time_taken_ms) VALUES (?, ?, ?, ?)",
-        [userId, cardId, rating, timeTakenMs]
-      );
+      try {
+        // Ensure timeTakenMs is a reasonable value
+        const sanitizedTime = Math.min(
+          Math.max(0, timeTakenMs || 0), // Ensure minimum 0
+          300000 // Cap at 5 minutes
+        );
+
+        await db.query(
+          "INSERT INTO review_history (user_id, card_id, rating, time_taken_ms) VALUES (?, ?, ?, ?)",
+          [userId, cardId, rating, sanitizedTime]
+        );
+      } catch (historyError) {
+        console.error("Error inserting review history:", historyError);
+        console.error("Parameters:", [userId, cardId, rating, timeTakenMs]);
+        // Log but don't throw - we don't want to fail the whole operation if just the history fails
+        // If we still want to track this review, we could add a fallback insert with a default time
+        try {
+          await db.query(
+            "INSERT INTO review_history (user_id, card_id, rating, time_taken_ms) VALUES (?, ?, ?, ?)",
+            [userId, cardId, rating, 5000] // Default to 5 seconds if original insert fails
+          );
+        } catch (fallbackError) {
+          console.error("Even fallback history insert failed:", fallbackError);
+        }
+      }
 
       // Update user stats
-      await this.updateUserStats(userId);
+      try {
+        await this.updateUserStats(userId);
+      } catch (statsError) {
+        console.error("Error updating user stats:", statsError);
+        // Don't throw here, just log - we don't want to fail the whole operation
+      }
 
       return {
         ...newStats,
@@ -181,7 +229,7 @@ class SpacedRepetitionService {
         card_id: cardId,
       };
     } catch (error) {
-      console.error("Error updating card progress:", error);
+      console.error("Error in updateCardProgress:", error);
       throw error;
     }
   }
@@ -200,7 +248,7 @@ class SpacedRepetitionService {
         SELECT c.*, uc.ease_factor, uc.review_interval, uc.repetitions, uc.next_review
         FROM cards c
         JOIN user_cards uc ON c.id = uc.card_id
-        WHERE uc.user_id = ? AND uc.next_review <= NOW()
+        WHERE uc.user_id = ? AND (uc.next_review <= NOW() OR uc.review_interval = 0)
       `;
 
       const params = [userId];

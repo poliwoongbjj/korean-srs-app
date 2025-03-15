@@ -34,6 +34,29 @@
   margin: 0;
 }
 
+.auth-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.auth-logo svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+
+.auth-logo h1 {
+  font-size: 28px;
+  margin: 0;
+  color: #343a40;
+}
+
+.highlight {
+  color: #4263eb;
+}
+
 .auth-alert {
   background-color: #fff9db;
   color: #f59f00;

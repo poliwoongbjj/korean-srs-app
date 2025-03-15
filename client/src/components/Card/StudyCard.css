@@ -16,11 +16,17 @@
   height: 300px;
   cursor: pointer;
   transform-style: preserve-3d;
-  transition: transform 0.6s;
+  transition: transform 0.4s;
 }
 
 .study-card.flipped {
   transform: rotateY(180deg);
+}
+
+/* Add this to hide content while card is flipping */
+.study-card.flipping .card-front,
+.study-card.flipping .card-back {
+  opacity: 0;
 }
 
 .card-front,
@@ -37,6 +43,8 @@
   justify-content: center;
   align-items: center;
   text-align: center;
+  /* Add transition for opacity */
+  transition: opacity 0.2s;
 }
 
 .card-front {
@@ -58,6 +66,13 @@
   justify-content: center;
   align-items: center;
   padding: 20px;
+  /* Fade content in/out during transitions */
+  transition: opacity 0.15s;
+}
+
+/* Hide content during card changes */
+.changing-card .card-content {
+  opacity: 0;
 }
 
 .korean-text {
