@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import StudyCard from "@components/Card/StudyCard";
 import cardsService from "@services/cards.service";
+import settingsService from "@services/settings.service"; // Added missing import
 import { useAuth } from "@contexts/AuthContext";
 import "./StudyPage.css";
 
@@ -34,6 +35,7 @@ const StudyPage = () => {
     }
   }, [isAuthenticated, navigate, deckId]);
 
+  // Load user preferences
   useEffect(() => {
     const fetchUserPreferences = async () => {
       try {
@@ -47,8 +49,14 @@ const StudyPage = () => {
     fetchUserPreferences();
   }, []);
 
-  // Load cards
+  // Load cards after preferences are set
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCards();
+    }
+  }, [isAuthenticated, studyOrder]); // Added dependency on studyOrder
 
+  // Function to fetch cards
   const fetchCards = async () => {
     try {
       setLoading(true);
@@ -250,7 +258,7 @@ const StudyPage = () => {
   return (
     <div className="study-page">
       <div className="study-header">
-        <h1>Review Korean Cards</h1>
+        <h1>Review Cards</h1>
         <button className="exit-btn" onClick={goToDashboard}>
           Exit Study
         </button>

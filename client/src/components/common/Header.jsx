@@ -107,6 +107,11 @@ const Header = () => {
                   </Link>
                 </li>
                 <li className="nav-item">
+                  <Link to="/decks" onClick={() => setMobileMenuOpen(false)}>
+                    Decks
+                  </Link>
+                </li>
+                <li className="nav-item">
                   <div className="user-dropdown">
                     <button className="user-dropdown-toggle">
                       <span className="user-name">{user?.username}</span>
