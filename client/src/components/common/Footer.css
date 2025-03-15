@@ -18,11 +18,23 @@
 }
 
 .footer-logo a {
-  display: inline-block;
+  display: flex;
+  align-items: center;
   text-decoration: none;
   font-size: 20px;
   font-weight: 700;
   margin-bottom: 12px;
+}
+
+.footer-logo .logo-image {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.footer-logo .logo-app {
+  color: #4263eb;
+  font-weight: 700;
 }
 
 .logo-text {

@@ -1,4 +1,4 @@
-// components/common/Header.jsx - Header component
+// components/common/Header.jsx - Updated with new name and logo
 
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -28,7 +28,47 @@ const Header = () => {
         <div className="header-content">
           <div className="logo">
             <Link to={isAuthenticated ? "/dashboard" : "/"}>
-              <span className="logo-text">한국어</span>{" "}
+              <div className="logo-image">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 32 32"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Koala face */}
+                  <circle cx="16" cy="16" r="15" fill="#AAA397" />
+
+                  {/* Ears */}
+                  <circle cx="6" cy="8" r="4" fill="#7D7168" />
+                  <circle cx="26" cy="8" r="4" fill="#7D7168" />
+
+                  {/* Inner ears */}
+                  <circle cx="6" cy="8" r="2" fill="#FFCBC0" />
+                  <circle cx="26" cy="8" r="2" fill="#FFCBC0" />
+
+                  {/* Face markings */}
+                  <circle cx="16" cy="19" r="8" fill="#FFFFFF" />
+
+                  {/* Eyes */}
+                  <circle cx="12" cy="14" r="2" fill="#000000" />
+                  <circle cx="20" cy="14" r="2" fill="#000000" />
+
+                  {/* Nose */}
+                  <ellipse cx="16" cy="17" rx="3" ry="2" fill="#333333" />
+
+                  {/* Book */}
+                  <rect x="10" y="22" width="12" height="6" fill="#4263EB" />
+                  <line
+                    x1="16"
+                    y1="22"
+                    x2="16"
+                    y2="28"
+                    stroke="#FFFFFF"
+                    strokeWidth="0.5"
+                  />
+                </svg>
+              </div>
               <span className="logo-app">Wanki</span>
             </Link>
           </div>
