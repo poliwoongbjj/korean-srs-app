@@ -1,0 +1,167 @@
+/* pages/HelpPage.css */
+.help-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.help-header {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.help-header h1 {
+  font-size: 32px;
+  color: #343a40;
+  margin: 0 0 8px 0;
+}
+
+.help-header p {
+  color: #6c757d;
+  font-size: 18px;
+  margin: 0;
+}
+
+.help-content {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+}
+
+.help-sidebar {
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+}
+
+.help-navigation {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+}
+
+.help-navigation h3 {
+  font-size: 18px;
+  color: #343a40;
+  margin: 0 0 16px 0;
+}
+
+.help-navigation ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.help-navigation li {
+  margin-bottom: 12px;
+}
+
+.help-navigation a {
+  color: #495057;
+  text-decoration: none;
+  display: block;
+  padding: 8px 0;
+  transition: color 0.2s;
+}
+
+.help-navigation a:hover {
+  color: #4263eb;
+}
+
+.help-articles {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 32px;
+}
+
+.help-section {
+  margin-bottom: 48px;
+}
+
+.help-section:last-child {
+  margin-bottom: 0;
+}
+
+.help-section h2 {
+  font-size: 28px;
+  color: #343a40;
+  margin: 0 0 24px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.help-article {
+  margin-bottom: 32px;
+}
+
+.help-article:last-child {
+  margin-bottom: 0;
+}
+
+.help-article h3 {
+  font-size: 20px;
+  color: #4263eb;
+  margin: 0 0 16px 0;
+}
+
+.help-article p {
+  color: #495057;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.help-article ul,
+.help-article ol {
+  padding-left: 24px;
+  margin: 0 0 16px 0;
+}
+
+.help-article li {
+  color: #495057;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.help-article strong {
+  font-weight: 600;
+  color: #343a40;
+}
+
+@media (max-width: 992px) {
+  .help-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .help-sidebar {
+    position: static;
+    margin-bottom: 24px;
+  }
+  
+  .help-navigation {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .help-header h1 {
+    font-size: 28px;
+  }
+  
+  .help-header p {
+    font-size: 16px;
+  }
+  
+  .help-articles {
+    padding: 24px 16px;
+  }
+  
+  .help-section h2 {
+    font-size: 24px;
+  }
+  
+  .help-article h3 {
+    font-size: 18px;
+  }
+}

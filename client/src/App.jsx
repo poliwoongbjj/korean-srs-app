@@ -1,4 +1,4 @@
-// App.jsx - Main application component
+// App.jsx - Updated with new routes
 
 import React from "react";
 import {
@@ -10,17 +10,23 @@ import {
 import { AuthProvider } from "@contexts/AuthContext";
 
 // Pages
+import LandingPage from "@pages/LandingPage";
 import LoginPage from "@pages/LoginPage";
 import RegisterPage from "@pages/RegisterPage";
 import DashboardPage from "@pages/DashboardPage";
 import StudyPage from "@pages/StudyPage";
 import CardsPage from "@pages/CardsPage";
+import NewCardPage from "@pages/NewCardPage";
+import EditCardPage from "@pages/EditCardPage";
 import DecksPage from "@pages/DecksPage";
 import DeckPage from "@pages/DeckPage";
-import NewCardPage from "@pages/NewCardPage";
 import NewDeckPage from "@pages/NewDeckPage";
+import EditDeckPage from "@pages/EditDeckPage";
+import CategoriesPage from "@pages/CategoriesPage";
 import StatsPage from "@pages/StatsPage";
 import SettingsPage from "@pages/SettingsPage";
+import UserProfilePage from "@pages/UserProfilePage";
+import HelpPage from "@pages/HelpPage";
 import NotFoundPage from "@pages/NotFoundPage";
 
 // Components
@@ -40,8 +46,10 @@ const App = () => {
           <main className="main-content">
             <Routes>
               {/* Public routes */}
+              <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/help" element={<HelpPage />} />
 
               {/* Protected routes */}
               <Route
@@ -77,6 +85,14 @@ const App = () => {
                 }
               />
               <Route
+                path="/cards/:id/edit"
+                element={
+                  <ProtectedRoute>
+                    <EditCardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/decks"
                 element={
                   <ProtectedRoute>
@@ -101,10 +117,34 @@ const App = () => {
                 }
               />
               <Route
+                path="/decks/:id/edit"
+                element={
+                  <ProtectedRoute>
+                    <EditDeckPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/categories"
+                element={
+                  <ProtectedRoute>
+                    <CategoriesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/stats"
                 element={
                   <ProtectedRoute>
                     <StatsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <UserProfilePage />
                   </ProtectedRoute>
                 }
               />
@@ -118,7 +158,6 @@ const App = () => {
               />
 
               {/* Default routes */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
