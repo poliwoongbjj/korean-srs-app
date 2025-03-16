@@ -159,31 +159,63 @@ const StatsPage = () => {
           </div>
 
           <div className="weekly-chart">
-            <h3>Weekly Activity</h3>
+            <h3>Weekly Review Activity</h3>
             <div className="chart-placeholder">
               {stats?.weekly_stats?.length > 0 ? (
                 <div className="bar-chart">
                   {stats.weekly_stats.map((day, index) => (
                     <div key={index} className="chart-bar-container">
+                      <div className="chart-label-y">{day.reviews_count}</div>
                       <div
                         className="chart-bar"
                         style={{
                           height: `${Math.min(100, day.reviews_count * 5)}%`,
                           backgroundColor:
-                            day.avg_rating >= 3 ? "#51cf66" : "#ff922b",
+                            day.reviews_count > 20
+                              ? "#51cf66" // Green for many reviews
+                              : day.reviews_count > 5
+                              ? "#ffd43b" // Yellow for moderate
+                              : "#fa5252", // Red for few
                         }}
                       ></div>
                       <div className="chart-label">
-                        {formatDate(day.date).split(" ")[1]}
+                        {new Date(day.date).toLocaleDateString(undefined, {
+                          weekday: "short",
+                          day: "numeric",
+                        })}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="no-data-message">
-                  No review data available for the past week.
+                  <p>No review data available for the past week.</p>
+                  <p>Complete some card reviews to see your statistics here.</p>
                 </div>
               )}
+            </div>
+            <div className="chart-legend">
+              <div className="legend-item">
+                <span
+                  className="legend-color"
+                  style={{ backgroundColor: "#51cf66" }}
+                ></span>
+                <span className="legend-text">20+ reviews</span>
+              </div>
+              <div className="legend-item">
+                <span
+                  className="legend-color"
+                  style={{ backgroundColor: "#ffd43b" }}
+                ></span>
+                <span className="legend-text">5-20 reviews</span>
+              </div>
+              <div className="legend-item">
+                <span
+                  className="legend-color"
+                  style={{ backgroundColor: "#fa5252" }}
+                ></span>
+                <span className="legend-text">&lt;5 reviews</span>
+              </div>
             </div>
           </div>
 

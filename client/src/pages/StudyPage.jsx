@@ -104,8 +104,9 @@ const StudyPage = () => {
 
   // Handle card review
   const handleReview = async (cardId, rating, timeTakenMs) => {
-    console.log("Card ID being sent:", cards[currentCardIndex].id);
     try {
+      console.log("Card ID being sent:", cardId);
+
       // Update card review in API
       await cardsService.reviewCard(cardId, {
         rating,
@@ -138,7 +139,10 @@ const StudyPage = () => {
 
       // Move to next card or complete
       if (currentCardIndex < cards.length - 1) {
-        setCurrentCardIndex((prevIndex) => prevIndex + 1);
+        // Add a small delay to allow card to flip back before showing next card
+        setTimeout(() => {
+          setCurrentCardIndex((prevIndex) => prevIndex + 1);
+        }, 300);
       } else {
         setStudyComplete(true);
       }
@@ -288,11 +292,14 @@ const StudyPage = () => {
       </div>
 
       <div className="study-content">
-        <StudyCard
-          card={cards[currentCardIndex]}
-          onReview={handleReview}
-          isLast={currentCardIndex === cards.length - 1}
-        />
+        {cards.length > 0 && (
+          <StudyCard
+            key={cards[currentCardIndex].id} // Add a key prop to force re-mounting
+            card={cards[currentCardIndex]}
+            onReview={handleReview}
+            isLast={currentCardIndex === cards.length - 1}
+          />
+        )}
       </div>
     </div>
   );
