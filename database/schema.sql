@@ -39,8 +39,11 @@ CREATE TABLE cards (
   pronunciation_notes TEXT,
   image_url VARCHAR(255),
   audio_url VARCHAR(255),
+  card_type ENUM('recognition', 'production', 'spelling') DEFAULT 'recognition',
+  related_card_id INT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
+  FOREIGN KEY (related_card_id) REFERENCES cards(id) ON DELETE CASCADE
 );
 
 -- User cards progress (spaced repetition data)

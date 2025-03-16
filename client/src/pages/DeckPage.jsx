@@ -313,11 +313,39 @@ const DeckPage = () => {
                   className="card-select"
                 >
                   <option value="">Choose a card</option>
-                  {filteredAvailableCards.map((card) => (
-                    <option key={card.id} value={card.id}>
-                      {card.korean_text} - {card.english_text}
-                    </option>
-                  ))}
+
+                  <optgroup label="Recognition Cards (Korean → English)">
+                    {filteredAvailableCards
+                      .filter(
+                        (card) =>
+                          !card.card_type || card.card_type === "recognition"
+                      )
+                      .map((card) => (
+                        <option key={card.id} value={card.id}>
+                          {card.korean_text} - {card.english_text}
+                        </option>
+                      ))}
+                  </optgroup>
+
+                  <optgroup label="Production Cards (English → Korean)">
+                    {filteredAvailableCards
+                      .filter((card) => card.card_type === "production")
+                      .map((card) => (
+                        <option key={card.id} value={card.id}>
+                          {card.english_text} - {card.korean_text}
+                        </option>
+                      ))}
+                  </optgroup>
+
+                  <optgroup label="Spelling Cards">
+                    {filteredAvailableCards
+                      .filter((card) => card.card_type === "spelling")
+                      .map((card) => (
+                        <option key={card.id} value={card.id}>
+                          {card.english_text} (Spelling)
+                        </option>
+                      ))}
+                  </optgroup>
                 </select>
               </div>
 

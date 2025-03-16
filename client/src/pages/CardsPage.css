@@ -133,6 +133,29 @@
   gap: 8px;
 }
 
+.card-type-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+.card-type-badge.recognition {
+  background-color: #e7f5ff;
+  color: #1971c2;
+}
+
+.card-type-badge.production {
+  background-color: #fff3bf;
+  color: #e67700;
+}
+
+.card-type-badge.spelling {
+  background-color: #d3f9d8;
+  color: #2b8a3e;
+}
+
 .edit-btn,
 .delete-btn {
   background: none;

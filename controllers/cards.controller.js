@@ -151,34 +151,94 @@ exports.createCard = async (req, res, next) => {
       });
     }
 
-    // Insert card - Convert any undefined values to null
-    const result = await db.query(
-      `INSERT INTO cards (
-        category_id, korean_text, english_text, romanization,
-        example_sentence, pronunciation_notes, image_url, audio_url
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        category_id || null,
-        korean_text,
-        english_text,
-        romanization || null,
-        example_sentence || null,
-        pronunciation_notes || null,
-        image_url || null,
-        audio_url || null,
-      ]
-    );
+    // Transaction to create all three card types
+    const connection = await db.pool.getConnection();
+    try {
+      await connection.beginTransaction();
 
-    // Get the created card
-    const cards = await db.query("SELECT * FROM cards WHERE id = ?", [
-      result.insertId,
-    ]);
+      // 1. Create the primary Korean → English card
+      const result1 = await connection.query(
+        `INSERT INTO cards (
+          category_id, korean_text, english_text, romanization,
+          example_sentence, pronunciation_notes, image_url, audio_url,
+          card_type
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          category_id || null,
+          korean_text,
+          english_text,
+          romanization || null,
+          example_sentence || null,
+          pronunciation_notes || null,
+          image_url || null,
+          audio_url || null,
+          "recognition", // Indicate this is a recognition card (see Korean, guess English)
+        ]
+      );
 
-    res.status(201).json({
-      success: true,
-      message: "Card created successfully",
-      data: cards[0],
-    });
+      const primaryCardId = result1[0].insertId;
+
+      // 2. Create the reverse English → Korean card
+      const result2 = await connection.query(
+        `INSERT INTO cards (
+          category_id, korean_text, english_text, romanization,
+          example_sentence, pronunciation_notes, image_url, audio_url,
+          card_type, related_card_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          category_id || null,
+          korean_text,
+          english_text,
+          romanization || null,
+          example_sentence || null,
+          pronunciation_notes || null,
+          image_url || null,
+          audio_url || null,
+          "production", // Indicate this is a production card (see English, guess Korean)
+          primaryCardId, // Link to the primary card
+        ]
+      );
+
+      // 3. Create the spelling card (English → Korean with audio)
+      const result3 = await connection.query(
+        `INSERT INTO cards (
+          category_id, korean_text, english_text, romanization,
+          example_sentence, pronunciation_notes, image_url, audio_url,
+          card_type, related_card_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          category_id || null,
+          korean_text,
+          english_text,
+          romanization || null,
+          example_sentence || null,
+          pronunciation_notes || null,
+          image_url || null,
+          audio_url || null,
+          "spelling", // Indicate this is a spelling card
+          primaryCardId, // Link to the primary card
+        ]
+      );
+
+      await connection.commit();
+
+      // Get all three created cards
+      const cards = await db.query(
+        "SELECT * FROM cards WHERE id IN (?, ?, ?)",
+        [primaryCardId, result2[0].insertId, result3[0].insertId]
+      );
+
+      res.status(201).json({
+        success: true,
+        message: "Three card types created successfully",
+        data: cards,
+      });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   } catch (error) {
     next(error);
   }
@@ -203,9 +263,10 @@ exports.updateCard = async (req, res, next) => {
     } = req.body;
 
     // Check if card exists
-    const existingCards = await db.query("SELECT * FROM cards WHERE id = ?", [
-      cardId,
-    ]);
+    const existingCards = await db.query(
+      "SELECT * FROM cards WHERE id = ? OR related_card_id = ?",
+      [cardId, cardId]
+    );
 
     if (existingCards.length === 0) {
       return res.status(404).json({
@@ -214,40 +275,57 @@ exports.updateCard = async (req, res, next) => {
       });
     }
 
-    // Update card
-    await db.query(
-      `UPDATE cards 
-       SET category_id = ?, 
-           korean_text = ?, 
-           english_text = ?, 
-           romanization = ?,
-           example_sentence = ?, 
-           pronunciation_notes = ?, 
-           image_url = ?, 
-           audio_url = ?
-       WHERE id = ?`,
-      [
-        category_id || null,
-        korean_text,
-        english_text,
-        romanization || null,
-        example_sentence || null,
-        pronunciation_notes || null,
-        image_url || null,
-        audio_url || null,
-        cardId,
-      ]
+    // Find the primary card (the one without related_card_id or with the lowest ID)
+    const primaryCard =
+      existingCards.find((card) => !card.related_card_id) ||
+      existingCards.reduce((prev, curr) => (prev.id < curr.id ? prev : curr));
+
+    // Get all related cards (including primary)
+    const allCardIds = [
+      primaryCard.id,
+      ...existingCards
+        .filter((card) => card.id !== primaryCard.id)
+        .map((card) => card.id),
+    ];
+
+    // Update all cards
+    await Promise.all(
+      allCardIds.map((id) =>
+        db.query(
+          `UPDATE cards 
+         SET category_id = ?, 
+             korean_text = ?, 
+             english_text = ?, 
+             romanization = ?,
+             example_sentence = ?, 
+             pronunciation_notes = ?, 
+             image_url = ?, 
+             audio_url = ?
+         WHERE id = ?`,
+          [
+            category_id || null,
+            korean_text,
+            english_text,
+            romanization || null,
+            example_sentence || null,
+            pronunciation_notes || null,
+            image_url || null,
+            audio_url || null,
+            id,
+          ]
+        )
+      )
     );
 
-    // Get the updated card
-    const updatedCards = await db.query("SELECT * FROM cards WHERE id = ?", [
-      cardId,
+    // Get the updated cards
+    const updatedCards = await db.query("SELECT * FROM cards WHERE id IN (?)", [
+      allCardIds,
     ]);
 
     res.status(200).json({
       success: true,
-      message: "Card updated successfully",
-      data: updatedCards[0],
+      message: "All related cards updated successfully",
+      data: updatedCards,
     });
   } catch (error) {
     next(error);
@@ -261,24 +339,28 @@ exports.deleteCard = async (req, res, next) => {
   try {
     const cardId = req.params.id;
 
-    // Check if card exists
-    const existingCards = await db.query("SELECT * FROM cards WHERE id = ?", [
-      cardId,
-    ]);
+    // Find the primary card and all related cards
+    const relatedCards = await db.query(
+      "SELECT * FROM cards WHERE id = ? OR related_card_id = ?",
+      [cardId, cardId]
+    );
 
-    if (existingCards.length === 0) {
+    if (relatedCards.length === 0) {
       return res.status(404).json({
         success: false,
         message: "Card not found",
       });
     }
 
-    // Delete card
-    await db.query("DELETE FROM cards WHERE id = ?", [cardId]);
+    // Get all card IDs to delete
+    const cardIds = relatedCards.map((card) => card.id);
+
+    // Delete all related cards
+    await db.query("DELETE FROM cards WHERE id IN (?)", [cardIds]);
 
     res.status(200).json({
       success: true,
-      message: "Card deleted successfully",
+      message: `Successfully deleted ${cardIds.length} related cards`,
       data: {},
     });
   } catch (error) {

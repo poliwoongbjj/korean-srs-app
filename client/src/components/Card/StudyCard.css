@@ -58,6 +58,80 @@
   border: 2px solid #dee2e6;
 }
 
+.card-type-indicator {
+  font-size: 12px;
+  color: #6c757d;
+  background-color: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+.spelling-form {
+  width: 100%;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.spelling-form input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 16px;
+  text-align: center;
+}
+
+.spelling-form input:focus {
+  outline: none;
+  border-color: #4263eb;
+}
+
+.check-btn {
+  background-color: #4263eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.check-btn:hover {
+  background-color: #364fc7;
+}
+
+.spelling-result {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.spelling-result.correct {
+  background-color: #d3f9d8;
+  color: #2b8a3e;
+}
+
+.spelling-result.incorrect {
+  background-color: #ffe3e3;
+  color: #e03131;
+}
+
+/* Enhance transitions */
+.changing-card .card-content {
+  opacity: 0;
+}
+
+.card-content {
+  transition: opacity 0.15s;
+}
+
 .card-content {
   width: 100%;
   height: 100%;

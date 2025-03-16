@@ -205,6 +205,12 @@ const CardsPage = () => {
                     <span className="card-category">
                       {getCategoryName(card.category_id)}
                     </span>
+                    {card.card_type && (
+                      <span className={`card-type-badge ${card.card_type}`}>
+                        {card.card_type.charAt(0).toUpperCase() +
+                          card.card_type.slice(1)}
+                      </span>
+                    )}
                     <div className="card-actions">
                       <Link to={`/cards/${card.id}/edit`} className="edit-btn">
                         <i className="fa fa-edit"></i>
