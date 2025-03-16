@@ -1,4 +1,4 @@
-// App.jsx - Updated with new routes
+// App.jsx - Updated with all routes
 
 import React from "react";
 import {
@@ -23,6 +23,7 @@ import DeckPage from "@pages/DeckPage";
 import NewDeckPage from "@pages/NewDeckPage";
 import EditDeckPage from "@pages/EditDeckPage";
 import CategoriesPage from "@pages/CategoriesPage";
+import CategoryPage from "@pages/CategoryPage";
 import StatsPage from "@pages/StatsPage";
 import SettingsPage from "@pages/SettingsPage";
 import UserProfilePage from "@pages/UserProfilePage";
@@ -68,6 +69,8 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Cards management */}
               <Route
                 path="/cards"
                 element={
@@ -92,19 +95,13 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Decks management */}
               <Route
                 path="/decks"
                 element={
                   <ProtectedRoute>
                     <DecksPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/decks/:id"
-                element={
-                  <ProtectedRoute>
-                    <DeckPage />
                   </ProtectedRoute>
                 }
               />
@@ -117,6 +114,14 @@ const App = () => {
                 }
               />
               <Route
+                path="/decks/:id"
+                element={
+                  <ProtectedRoute>
+                    <DeckPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/decks/:id/edit"
                 element={
                   <ProtectedRoute>
@@ -124,6 +129,8 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Categories management */}
               <Route
                 path="/categories"
                 element={
@@ -132,6 +139,16 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/categories/:id"
+                element={
+                  <ProtectedRoute>
+                    <CategoryPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Stats, settings and profile */}
               <Route
                 path="/stats"
                 element={

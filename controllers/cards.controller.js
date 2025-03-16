@@ -58,13 +58,15 @@ exports.getAllCards = async (req, res, next) => {
 exports.getDueCards = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    const { limit = 20, deckId } = req.query;
+    const { limit = 20, deckId, categoryId } = req.query;
 
     // Use SRS service to get due cards
     const dueCards = await srsService.getDueCards(
       userId,
       parseInt(limit),
-      deckId ? parseInt(deckId) : null
+      deckId ? parseInt(deckId) : null,
+      req.query.orderBy || "random",
+      categoryId ? parseInt(categoryId) : null
     );
 
     res.status(200).json({
@@ -83,13 +85,15 @@ exports.getDueCards = async (req, res, next) => {
 exports.getNewCards = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    const { limit = 10, deckId } = req.query;
+    const { limit = 10, deckId, categoryId } = req.query;
 
     // Use SRS service to get new cards
     const newCards = await srsService.getNewCards(
       userId,
       parseInt(limit),
-      deckId ? parseInt(deckId) : null
+      deckId ? parseInt(deckId) : null,
+      req.query.orderBy || "random",
+      categoryId ? parseInt(categoryId) : null
     );
 
     res.status(200).json({

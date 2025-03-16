@@ -1,4 +1,4 @@
-// components/common/Header.jsx - Updated with new name and logo
+// components/common/Header.jsx - Updated with profile link and help link
 
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -112,12 +112,31 @@ const Header = () => {
                   </Link>
                 </li>
                 <li className="nav-item">
+                  <Link
+                    to="/categories"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Categories
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/help" onClick={() => setMobileMenuOpen(false)}>
+                    Help
+                  </Link>
+                </li>
+                <li className="nav-item">
                   <div className="user-dropdown">
                     <button className="user-dropdown-toggle">
                       <span className="user-name">{user?.username}</span>
                       <i className="fa fa-chevron-down"></i>
                     </button>
                     <div className="user-dropdown-content">
+                      <Link
+                        to="/profile"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        My Profile
+                      </Link>
                       <Link
                         to="/settings"
                         onClick={() => setMobileMenuOpen(false)}
@@ -137,6 +156,11 @@ const Header = () => {
               </ul>
             ) : (
               <ul className="nav-list">
+                <li className="nav-item">
+                  <Link to="/help" onClick={() => setMobileMenuOpen(false)}>
+                    Help
+                  </Link>
+                </li>
                 <li className="nav-item">
                   <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                     Login

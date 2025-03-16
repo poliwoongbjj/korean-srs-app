@@ -1,7 +1,7 @@
 // pages/StudyPage.jsx - Study page for reviewing cards
 
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import StudyCard from "@components/Card/StudyCard";
 import cardsService from "@services/cards.service";
 import settingsService from "@services/settings.service";
@@ -11,6 +11,8 @@ import "./StudyPage.css";
 
 const StudyPage = () => {
   const { deckId } = useParams();
+  const [searchParams] = useSearchParams();
+  const categoryId = searchParams.get("category");
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
@@ -18,6 +20,7 @@ const StudyPage = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sourceInfo, setSourceInfo] = useState({ name: "", type: "" });
   const [studyOrder, setStudyOrder] = useState("random");
   const [studyComplete, setStudyComplete] = useState(false);
   const [stats, setStats] = useState({
@@ -62,23 +65,34 @@ const StudyPage = () => {
     try {
       setLoading(true);
 
-      // Get due cards with order preference
-      const dueResponse = await cardsService.getDueCards({
+      // Parameters object for API calls
+      const params = {
         limit: 20,
-        deckId: deckId || undefined,
         orderBy: studyOrder,
-      });
+      };
 
+      // Add deck ID if provided
+      if (deckId) {
+        params.deckId = deckId;
+      }
+
+      // Add category ID if provided
+      if (categoryId) {
+        params.categoryId = categoryId;
+      }
+
+      // Get due cards with parameters
+      const dueResponse = await cardsService.getDueCards(params);
       let studyCards = dueResponse.data;
 
       // If not enough due cards, get new cards
       if (studyCards.length < 10) {
-        const newResponse = await cardsService.getNewCards({
+        const newCardParams = {
+          ...params,
           limit: 10 - studyCards.length,
-          deckId: deckId || undefined,
-          orderBy: studyOrder,
-        });
+        };
 
+        const newResponse = await cardsService.getNewCards(newCardParams);
         studyCards = [...studyCards, ...newResponse.data];
       }
 
@@ -101,6 +115,39 @@ const StudyPage = () => {
       setLoading(false);
     }
   };
+
+  // Then add this effect to fetch the category or deck name:
+  useEffect(() => {
+    const fetchSourceInfo = async () => {
+      if (deckId) {
+        try {
+          const response = await decksService.getDeckById(deckId);
+          setSourceInfo({
+            name: response.data.deck.name,
+            type: "deck",
+          });
+        } catch (err) {
+          console.error("Error fetching deck info:", err);
+        }
+      } else if (categoryId) {
+        try {
+          const response = await categoriesService.getCategoryById(categoryId);
+          setSourceInfo({
+            name: response.data.category.name,
+            type: "category",
+          });
+        } catch (err) {
+          console.error("Error fetching category info:", err);
+        }
+      }
+    };
+
+    if (deckId || categoryId) {
+      fetchSourceInfo();
+    } else {
+      setSourceInfo({ name: "", type: "" });
+    }
+  }, [deckId, categoryId]);
 
   // Handle card review
   const handleReview = async (cardId, rating, timeTakenMs) => {
@@ -285,7 +332,13 @@ const StudyPage = () => {
   return (
     <div className="study-page">
       <div className="study-header">
-        <h1>Review Cards</h1>
+        <h1>
+          {sourceInfo.name
+            ? `Review Cards: ${sourceInfo.name} ${
+                sourceInfo.type === "deck" ? "Deck" : "Category"
+              }`
+            : "Review Cards"}
+        </h1>
         <button className="exit-btn" onClick={goToDashboard}>
           Exit Study
         </button>

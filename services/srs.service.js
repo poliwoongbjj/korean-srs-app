@@ -242,13 +242,19 @@ class SpacedRepetitionService {
    * @param {number} deckId - Optional deck ID to filter by
    * @returns {Promise<Array>} - Array of due cards
    */
-  async getDueCards(userId, limit = 20, deckId = null, orderBy = "random") {
+  async getDueCards(
+    userId,
+    limit = 20,
+    deckId = null,
+    orderBy = "random",
+    categoryId = null
+  ) {
     try {
       let query = `
         SELECT c.*, uc.ease_factor, uc.review_interval, uc.repetitions, uc.next_review
         FROM cards c
         JOIN user_cards uc ON c.id = uc.card_id
-        WHERE uc.user_id = ? AND (uc.next_review <= NOW() OR uc.review_interval = 0)
+        WHERE uc.user_id = ? AND uc.next_review <= NOW()
       `;
 
       const params = [userId];
@@ -257,6 +263,12 @@ class SpacedRepetitionService {
       if (deckId) {
         query += ` AND c.id IN (SELECT card_id FROM deck_cards WHERE deck_id = ?)`;
         params.push(deckId);
+      }
+
+      // If category ID is provided, filter by category
+      if (categoryId) {
+        query += ` AND c.category_id = ?`;
+        params.push(categoryId);
       }
 
       // Order based on preference
@@ -271,7 +283,7 @@ class SpacedRepetitionService {
         query += ` ORDER BY uc.repetitions ASC, uc.next_review ASC`;
       }
 
-      // Use the new queryWithLimit function
+      // Use the queryWithLimit function
       return await db.queryWithLimit(query, params, limit);
     } catch (error) {
       console.error("Error getting due cards:", error);
@@ -287,7 +299,13 @@ class SpacedRepetitionService {
    * @param {number} deckId - Optional deck ID to filter by
    * @returns {Promise<Array>} - Array of new cards
    */
-  async getNewCards(userId, limit = 10, deckId = null, orderBy = "random") {
+  async getNewCards(
+    userId,
+    limit = 10,
+    deckId = null,
+    orderBy = "random",
+    categoryId = null
+  ) {
     try {
       let query = `
         SELECT c.*
@@ -306,6 +324,12 @@ class SpacedRepetitionService {
         params.push(deckId);
       }
 
+      // If category ID is provided, filter by category
+      if (categoryId) {
+        query += ` AND c.category_id = ?`;
+        params.push(categoryId);
+      }
+
       // Order based on preference
       if (orderBy === "added") {
         query += ` ORDER BY CASE WHEN dc.deck_id IS NOT NULL THEN dc.added_at ELSE c.created_at END ASC`;
@@ -314,7 +338,7 @@ class SpacedRepetitionService {
         query += ` ORDER BY RAND()`;
       }
 
-      // Use the new queryWithLimit function
+      // Use the queryWithLimit function
       return await db.queryWithLimit(query, params, limit);
     } catch (error) {
       console.error("Error getting new cards:", error);
