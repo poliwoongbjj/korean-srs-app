@@ -102,4 +102,3 @@ A full-stack application for learning Korean using a spaced repetition system si
 
 ## License
 
-MIT License
