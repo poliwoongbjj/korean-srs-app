@@ -1,9 +1,11 @@
-// pages/EditCardPage.jsx
+// pages/EditCardPage.jsx - Edit card page with audio upload
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import cardsService from "@/services/cards.service";
 import categoriesService from "@/services/categories.service";
-import "./CardForm.css"; // Reusing your existing CSS
+import AudioUploader from "@components/common/AudioUploader";
+import "./CardForm.css";
 
 const EditCardPage = () => {
   const navigate = useNavigate();
@@ -18,6 +20,8 @@ const EditCardPage = () => {
     pronunciation_notes: "",
     image_url: "",
     audio_url: "",
+    audio_file_path: "",
+    card_type: "recognition",
   });
 
   const [categories, setCategories] = useState([]);
@@ -25,6 +29,7 @@ const EditCardPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [formErrors, setFormErrors] = useState({});
+  const [audioUploaded, setAudioUploaded] = useState(false);
 
   // Load card data and categories
   useEffect(() => {
@@ -34,7 +39,22 @@ const EditCardPage = () => {
 
         // Fetch card data
         const cardResponse = await cardsService.getCardById(id);
-        setFormData(cardResponse.data);
+        setFormData({
+          ...cardResponse.data,
+          category_id: cardResponse.data.category_id || "",
+          romanization: cardResponse.data.romanization || "",
+          example_sentence: cardResponse.data.example_sentence || "",
+          pronunciation_notes: cardResponse.data.pronunciation_notes || "",
+          image_url: cardResponse.data.image_url || "",
+          audio_url: cardResponse.data.audio_url || "",
+          audio_file_path: cardResponse.data.audio_file_path || "",
+          card_type: cardResponse.data.card_type || "recognition",
+        });
+
+        // Set audio uploaded flag if there's an audio file path
+        if (cardResponse.data.audio_file_path) {
+          setAudioUploaded(true);
+        }
 
         // Fetch categories
         const categoriesResponse = await categoriesService.getAllCategories();
@@ -65,6 +85,21 @@ const EditCardPage = () => {
         [name]: "",
       });
     }
+  };
+
+  // Handle audio upload success
+  const handleAudioUploadSuccess = (fileData) => {
+    setFormData({
+      ...formData,
+      audio_file_path: fileData.path,
+    });
+    setAudioUploaded(true);
+  };
+
+  // Handle audio upload error
+  const handleAudioUploadError = (error) => {
+    console.error("Audio upload error:", error);
+    setError(`Audio upload failed: ${error}`);
   };
 
   // Validate form
@@ -100,6 +135,7 @@ const EditCardPage = () => {
           pronunciation_notes: formData.pronunciation_notes || null,
           image_url: formData.image_url || null,
           audio_url: formData.audio_url || null,
+          audio_file_path: formData.audio_file_path || null,
         };
 
         await cardsService.updateCard(id, cardData);
@@ -142,7 +178,7 @@ const EditCardPage = () => {
             <select
               id="category_id"
               name="category_id"
-              value={formData.category_id || ""}
+              value={formData.category_id}
               onChange={handleChange}
             >
               <option value="">Select a category</option>
@@ -151,6 +187,22 @@ const EditCardPage = () => {
                   {category.name}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="card_type">Card Type</label>
+            <select
+              id="card_type"
+              name="card_type"
+              value={formData.card_type}
+              onChange={handleChange}
+            >
+              <option value="recognition">
+                Recognition (Korean → English)
+              </option>
+              <option value="production">Production (English → Korean)</option>
+              <option value="spelling">Spelling (Audio Test)</option>
             </select>
           </div>
 
@@ -192,7 +244,7 @@ const EditCardPage = () => {
               type="text"
               id="romanization"
               name="romanization"
-              value={formData.romanization || ""}
+              value={formData.romanization}
               onChange={handleChange}
             />
           </div>
@@ -202,7 +254,7 @@ const EditCardPage = () => {
             <textarea
               id="example_sentence"
               name="example_sentence"
-              value={formData.example_sentence || ""}
+              value={formData.example_sentence}
               onChange={handleChange}
               rows="3"
             ></textarea>
@@ -213,34 +265,56 @@ const EditCardPage = () => {
             <textarea
               id="pronunciation_notes"
               name="pronunciation_notes"
-              value={formData.pronunciation_notes || ""}
+              value={formData.pronunciation_notes}
               onChange={handleChange}
               rows="2"
             ></textarea>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="image_url">Image URL</label>
-              <input
-                type="text"
-                id="image_url"
-                name="image_url"
-                value={formData.image_url || ""}
-                onChange={handleChange}
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="audio_upload">Audio File</label>
+            {formData.audio_file_path && (
+              <div className="current-audio">
+                <p>Current audio file:</p>
+                <audio controls src={formData.audio_file_path}></audio>
+              </div>
+            )}
+            <AudioUploader
+              onUploadSuccess={handleAudioUploadSuccess}
+              onUploadError={handleAudioUploadError}
+            />
+            {audioUploaded && !formData.audio_file_path && (
+              <div className="audio-preview">
+                <audio controls src={formData.audio_file_path}></audio>
+                <p className="upload-success">New audio file uploaded</p>
+              </div>
+            )}
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="audio_url">Audio URL</label>
-              <input
-                type="text"
-                id="audio_url"
-                name="audio_url"
-                value={formData.audio_url || ""}
-                onChange={handleChange}
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="audio_url">
+              Audio URL{" "}
+              {formData.audio_file_path && "(Not needed if file uploaded)"}
+            </label>
+            <input
+              type="text"
+              id="audio_url"
+              name="audio_url"
+              value={formData.audio_url}
+              onChange={handleChange}
+              placeholder="External audio URL (optional if file uploaded)"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="image_url">Image URL</label>
+            <input
+              type="text"
+              id="image_url"
+              name="image_url"
+              value={formData.image_url}
+              onChange={handleChange}
+            />
           </div>
 
           <div className="form-actions">

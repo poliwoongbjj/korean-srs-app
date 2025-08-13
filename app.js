@@ -17,6 +17,8 @@ var reviewsRoutes = require("./routes/reviews.routes");
 var statsRoutes = require("./routes/stats.routes");
 var categoriesRoutes = require("./routes/categories.routes");
 var settingsRoutes = require("./routes/settings.routes");
+var uploadRoutes = require("./routes/upload.routes");
+var audioRoutes = require("./routes/audio.routes");
 
 var app = express();
 
@@ -29,7 +31,7 @@ app.use(
 ); // Enable CORS
 app.use(logger("dev"));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -41,6 +43,8 @@ app.use("/api/reviews", reviewsRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/categories", categoriesRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/audio", audioRoutes);
 
 // Route to check server health
 app.get("/api/health", (req, res) => {

@@ -5,7 +5,8 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import StudyCard from "@components/Card/StudyCard";
 import cardsService from "@services/cards.service";
 import settingsService from "@services/settings.service";
-import statsService from "@/services/stats.service";
+import decksService from "@/services/decks.service";
+import categoriesService from "@/services/categories.service";
 import { useAuth } from "@contexts/AuthContext";
 import "./StudyPage.css";
 
@@ -152,7 +153,6 @@ const StudyPage = () => {
   // Handle card review
   const handleReview = async (cardId, rating, timeTakenMs) => {
     try {
-      console.log("Card ID being sent:", cardId);
 
       // Update card review in API
       await cardsService.reviewCard(cardId, {

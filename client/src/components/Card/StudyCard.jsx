@@ -1,5 +1,6 @@
+// components/Card/StudyCard.jsx - Updated with improved audio handling
+
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import "./StudyCard.css";
 
 const StudyCard = ({ card, onReview, isLast }) => {
@@ -8,6 +9,7 @@ const StudyCard = ({ card, onReview, isLast }) => {
   const [userInput, setUserInput] = useState("");
   const [changingCard, setChangingCard] = useState(false);
   const [displayedCard, setDisplayedCard] = useState(card);
+  const [audioError, setAudioError] = useState(false);
 
   // Handle card changes more gracefully
   useEffect(() => {
@@ -24,6 +26,7 @@ const StudyCard = ({ card, onReview, isLast }) => {
         setDisplayedCard(card);
         setUserInput("");
         setStartTime(Date.now());
+        setAudioError(false);
 
         // Step 4: After updating content, remove the changing flag
         setTimeout(() => {
@@ -68,15 +71,119 @@ const StudyCard = ({ card, onReview, isLast }) => {
     onReview(displayedCard.id, rating, cappedTimeTaken);
   };
 
-  // Play audio if available
+  // Enhanced play audio function with better error handling and debugging
   const playAudio = (e) => {
     if (e) e.stopPropagation(); // Prevent card flip
 
-    if (displayedCard.audio_url) {
-      const audio = new Audio(displayedCard.audio_url);
-      audio.play();
+    // Try using the uploaded file first, fall back to URL if needed
+    let audioSource = displayedCard.audio_file_path || displayedCard.audio_url;
+
+
+    // No need to change the path if it's already an API endpoint
+    if (
+      audioSource &&
+      !audioSource.startsWith("http") &&
+      !audioSource.startsWith("/api/")
+    ) {
+      // If it's a traditional path, convert it to the API endpoint
+      const filename = audioSource.split("/").pop(); // Get the filename part
+      if (filename) {
+        audioSource = `/api/audio/${filename}`;
+      }
+    }
+
+
+    if (audioSource) {
+      try {
+        setAudioError(false);
+        const audio = new Audio(audioSource);
+
+
+
+
+
+        audio.onerror = (err) => {
+          console.error("Audio playback error:", err);
+          console.error(
+            "Audio element error code:",
+            audio.error ? audio.error.code : "unknown"
+          );
+          console.error(
+            "Audio element error message:",
+            audio.error ? audio.error.message : "unknown"
+          );
+          setAudioError(true);
+        };
+
+        audio.play().catch((err) => {
+          console.error("Audio play error:", err);
+          setAudioError(true);
+        });
+      } catch (err) {
+        console.error("Audio error:", err);
+        setAudioError(true);
+      }
+    } else {
+      console.error("No audio source available for playback");
     }
   };
+
+  // Test with a known working audio file
+  // const testAudioPlayback = () => {
+  //   const testAudio = new Audio(
+  //     "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+  //   );
+  //   testAudio.onerror = (err) => {
+  //     console.error("Test audio error:", err);
+  //   };
+  //   testAudio.play().catch((err) => {
+  //     console.error("Test audio play error:", err);
+  //   });
+  // };
+
+  // Fallback audio player component
+  const AudioPlayer = ({ src }) => {
+    if (!src) return null;
+
+    // Convert traditional paths to API paths if needed
+    let audioSrc = src;
+    if (
+      !src.startsWith("http") &&
+      !src.startsWith("/api/") &&
+      src.includes("/uploads/")
+    ) {
+      const filename = src.split("/").pop();
+      if (filename) {
+        audioSrc = `/api/audio/${filename}`;
+      }
+    }
+
+    return (
+      <div className="audio-player">
+        <audio controls>
+          <source src={audioSrc} type="audio/mpeg" />
+          <source src={audioSrc} type="audio/wav" />
+          <source src={audioSrc} type="audio/ogg" />
+          Your browser does not support the audio element.
+        </audio>
+        <div className="audio-link">
+          <a href={audioSrc} target="_blank" rel="noopener noreferrer">
+            Open in new tab
+          </a>
+        </div>
+      </div>
+    );
+  };
+
+  // Handle automatic audio playback for spelling cards
+  useEffect(() => {
+    if (displayedCard.card_type === "spelling" && !isFlipped && !changingCard) {
+      // Auto-play audio for spelling cards after a short delay
+      const autoPlayTimer = setTimeout(() => playAudio(), 500);
+      return () => clearTimeout(autoPlayTimer);
+    }
+  }, [displayedCard, changingCard, isFlipped]);
+
 
   // Handle spelling check
   const checkSpelling = (e) => {
@@ -123,7 +230,7 @@ const StudyCard = ({ card, onReview, isLast }) => {
         return (
           <div className="card-content">
             <h2 className="english-text">{displayedCard.english_text}</h2>
-
+            <p className="hint-text">What's the Korean translation?</p>
             <div className="card-type-indicator">Production Card</div>
             <p className="hint-text">Click to flip</p>
           </div>
@@ -133,11 +240,31 @@ const StudyCard = ({ card, onReview, isLast }) => {
         return (
           <div className="card-content">
             <h2 className="english-text">{displayedCard.english_text}</h2>
-            {displayedCard.audio_url && (
-              <button className="audio-btn" onClick={playAudio}>
+            {/* Audio controls with error handling */}
+            <div className="audio-controls">
+              <button
+                className="audio-btn"
+                onClick={playAudio}
+                title="Play pronunciation"
+              >
                 <i className="fas fa-volume-up"></i> Listen
               </button>
-            )}
+              {audioError && (
+                <>
+                  <div className="audio-error">
+                    Unable to play audio automatically. Try using the player
+                    below:
+                  </div>
+                  <AudioPlayer
+                    src={
+                      displayedCard.audio_file_path || displayedCard.audio_url
+                    }
+                  />
+                </>
+              )}
+            </div>
+
+            {/* Spelling form */}
             <form onSubmit={checkSpelling} className="spelling-form">
               <input
                 type="text"
@@ -161,16 +288,28 @@ const StudyCard = ({ card, onReview, isLast }) => {
             {displayedCard.romanization && (
               <p className="romanization">{displayedCard.romanization}</p>
             )}
-            {displayedCard.audio_url && (
-              <button
-                className="audio-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  playAudio();
-                }}
-              >
-                <i className="fas fa-volume-up"></i>
-              </button>
+            {(displayedCard.audio_file_path || displayedCard.audio_url) && (
+              <div className="audio-controls">
+                <button
+                  className="audio-btn"
+                  onClick={playAudio}
+                  title="Play pronunciation"
+                >
+                  <i className="fas fa-volume-up"></i> Listen
+                </button>
+                {audioError && (
+                  <>
+                    <div className="audio-error">
+                      Unable to play audio. Try using the player below:
+                    </div>
+                    <AudioPlayer
+                      src={
+                        displayedCard.audio_file_path || displayedCard.audio_url
+                      }
+                    />
+                  </>
+                )}
+              </div>
             )}
             <div className="card-type-indicator">Recognition Card</div>
             <p className="hint-text">Click to flip</p>
@@ -191,10 +330,28 @@ const StudyCard = ({ card, onReview, isLast }) => {
             {displayedCard.romanization && (
               <p className="romanization">{displayedCard.romanization}</p>
             )}
-            {displayedCard.audio_url && (
-              <button className="audio-btn" onClick={playAudio}>
-                <i className="fas fa-volume-up"></i>
-              </button>
+            {(displayedCard.audio_file_path || displayedCard.audio_url) && (
+              <div className="audio-controls">
+                <button
+                  className="audio-btn"
+                  onClick={playAudio}
+                  title="Play pronunciation"
+                >
+                  <i className="fas fa-volume-up"></i> Listen
+                </button>
+                {audioError && (
+                  <>
+                    <div className="audio-error">
+                      Unable to play audio. Try using the player below:
+                    </div>
+                    <AudioPlayer
+                      src={
+                        displayedCard.audio_file_path || displayedCard.audio_url
+                      }
+                    />
+                  </>
+                )}
+              </div>
             )}
             {displayedCard.example_sentence && (
               <p className="example-sentence">
@@ -204,7 +361,7 @@ const StudyCard = ({ card, onReview, isLast }) => {
           </div>
         );
 
-      case "spelling": // Spelling card back shows correctness
+      case "spelling": { // Spelling card back shows correctness
         const isCorrect =
           userInput.trim().toLowerCase() ===
           displayedCard.korean_text.trim().toLowerCase();
@@ -220,9 +377,36 @@ const StudyCard = ({ card, onReview, isLast }) => {
                 isCorrect ? "correct" : "incorrect"
               }`}
             >
-              <p>Your answer: {userInput || "(empty)"}</p>
-              <p>Correct answer: {displayedCard.korean_text}</p>
+              <p>
+                Your answer: <strong>{userInput || "(empty)"}</strong>
+              </p>
+              <p>
+                Correct answer: <strong>{displayedCard.korean_text}</strong>
+              </p>
             </div>
+            {(displayedCard.audio_file_path || displayedCard.audio_url) && (
+              <div className="audio-controls">
+                <button
+                  className="audio-btn"
+                  onClick={playAudio}
+                  title="Play pronunciation again"
+                >
+                  <i className="fas fa-volume-up"></i> Listen Again
+                </button>
+                {audioError && (
+                  <>
+                    <div className="audio-error">
+                      Unable to play audio. Try using the player below:
+                    </div>
+                    <AudioPlayer
+                      src={
+                        displayedCard.audio_file_path || displayedCard.audio_url
+                      }
+                    />
+                  </>
+                )}
+              </div>
+            )}
             {displayedCard.example_sentence && (
               <p className="example-sentence">
                 {displayedCard.example_sentence}
@@ -230,6 +414,7 @@ const StudyCard = ({ card, onReview, isLast }) => {
             )}
           </div>
         );
+      }
 
       default: // Recognition: Korean → English
         return (

@@ -33,28 +33,23 @@ const DashboardPage = () => {
       try {
         setLoading(true);
 
-        console.log("Fetching user stats...");
         // Let's get user stats first as a simple check
         try {
           const statsResponse = await api.get("/stats");
-          console.log("Stats response:", statsResponse.data);
 
           // Get other data...
           // If you don't have these endpoints implemented yet, comment them out
 
           // Get due cards count
           const dueResponse = await api.get("/cards/study/due");
-          console.log("Due cards response:", dueResponse.data);
           const dueCount = dueResponse.data.count;
 
           // Get new cards count
           const newResponse = await api.get("/cards/study/new");
-          console.log("New cards response:", newResponse.data);
           const newCount = newResponse.data.count;
 
           // Get total cards count
           const allCardsResponse = await api.get("/cards");
-          console.log("All cards response:", allCardsResponse.data);
           const totalCount = allCardsResponse.data.total;
 
           // Update stats
@@ -68,7 +63,6 @@ const DashboardPage = () => {
 
           // Get decks
           const decksResponse = await api.get("/decks");
-          console.log("Decks response:", decksResponse.data);
           setDecks(decksResponse.data.data);
 
           // For now, just set some placeholder data
@@ -83,13 +77,10 @@ const DashboardPage = () => {
           setDecks([]);
         } catch (statsError) {
           console.error("Error fetching stats:", statsError);
-          console.error("Response data:", statsError.response?.data);
-          console.error("Status code:", statsError.response?.status);
           throw new Error(`Stats API error: ${statsError.message}`);
         }
       } catch (err) {
         console.error("Error loading dashboard data:", err);
-        console.error("Response:", err.response);
         setError(`Failed to load dashboard data: ${err.message}`);
       } finally {
         setLoading(false);

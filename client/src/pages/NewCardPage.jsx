@@ -1,9 +1,10 @@
-// pages/NewCardPage.jsx - Create new card page
+// pages/NewCardPage.jsx - Create new card page with audio upload
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import cardsService from "@/services/cards.service";
 import categoriesService from "@/services/categories.service";
+import AudioUploader from "@components/common/AudioUploader";
 import "./CardForm.css";
 
 const NewCardPage = () => {
@@ -18,6 +19,8 @@ const NewCardPage = () => {
     pronunciation_notes: "",
     image_url: "",
     audio_url: "",
+    audio_file_path: "",
+    card_type: "recognition", // Default to recognition
   });
 
   const [categories, setCategories] = useState([]);
@@ -61,6 +64,35 @@ const NewCardPage = () => {
     }
   };
 
+  // Handle audio upload success
+  const handleAudioUploadSuccess = (fileData) => {
+
+    // Store both the path and the full URL for testing
+    setFormData({
+      ...formData,
+      audio_file_path: fileData.path,
+    });
+
+    // Test the audio immediately after upload
+    const testAudio = new Audio(window.location.origin + fileData.path);
+
+
+
+    testAudio.onerror = (err) => {
+      console.error("Test audio error after upload:", err);
+    };
+
+    testAudio.play().catch(() => {
+      // Silent error handling for audio play test
+    });
+  };
+
+  // Handle audio upload error
+  const handleAudioUploadError = (error) => {
+    console.error("Audio upload error:", error);
+    setError(`Audio upload failed: ${error}`);
+  };
+
   // Validate form
   const validateForm = () => {
     const errors = {};
@@ -94,9 +126,10 @@ const NewCardPage = () => {
           pronunciation_notes: formData.pronunciation_notes || null,
           image_url: formData.image_url || null,
           audio_url: formData.audio_url || null,
+          audio_file_path: formData.audio_file_path || null,
         };
 
-        const response = await cardsService.createCard(cardData);
+        await cardsService.createCard(cardData);
 
         // Navigate to cards page after successful creation
         navigate("/cards");
@@ -145,6 +178,22 @@ const NewCardPage = () => {
                   {category.name}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="card_type">Card Type</label>
+            <select
+              id="card_type"
+              name="card_type"
+              value={formData.card_type}
+              onChange={handleChange}
+            >
+              <option value="recognition">
+                Recognition (Korean → English)
+              </option>
+              <option value="production">Production (English → Korean)</option>
+              <option value="spelling">Spelling (Audio Test)</option>
             </select>
           </div>
 
@@ -213,28 +262,46 @@ const NewCardPage = () => {
             ></textarea>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="image_url">Image URL</label>
-              <input
-                type="text"
-                id="image_url"
-                name="image_url"
-                value={formData.image_url}
-                onChange={handleChange}
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="audio_upload">Audio File</label>
+            <AudioUploader
+              onUploadSuccess={handleAudioUploadSuccess}
+              onUploadError={handleAudioUploadError}
+            />
+            {formData.audio_file_path && (
+              <div className="audio-preview">
+                <audio controls src={formData.audio_file_path}></audio>
+                <p className="upload-success">
+                  Audio file uploaded successfully
+                </p>
+              </div>
+            )}
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="audio_url">Audio URL</label>
-              <input
-                type="text"
-                id="audio_url"
-                name="audio_url"
-                value={formData.audio_url}
-                onChange={handleChange}
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="audio_url">
+              Audio URL{" "}
+              {formData.audio_file_path && "(Not needed if file uploaded)"}
+            </label>
+            <input
+              type="text"
+              id="audio_url"
+              name="audio_url"
+              value={formData.audio_url}
+              onChange={handleChange}
+              placeholder="External audio URL (optional if file uploaded)"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="image_url">Image URL</label>
+            <input
+              type="text"
+              id="image_url"
+              name="image_url"
+              value={formData.image_url}
+              onChange={handleChange}
+            />
           </div>
 
           <div className="form-actions">
