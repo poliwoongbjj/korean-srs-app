@@ -5,6 +5,7 @@
   "scripts": {
     "start": "nodemon ./bin/www",
     "setup-db": "node ./database/setup-db.js"
+    "build": "npm run build"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
