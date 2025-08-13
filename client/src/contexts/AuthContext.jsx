@@ -48,24 +48,17 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const res = await api.post("/auth/register", userData);
-      console.log("Registration successful:", res.data);
+      await api.post("/auth/register", userData);
 
       return true;
     } catch (err) {
       console.error("Registration error:", err);
 
       // Extract the error message from the response
-      console.log("Full error response:", err.response);
-      console.log("Error data:", err.response?.data);
-      console.log("Error message from server:", err.response?.data?.message);
       // Notice how we dive into err.response.data.message
       const errorMessage =
         err.response?.data?.message || "Registration failed. Please try again.";
-      console.log("Error message from server:", errorMessage); // Add this for debugging
-
       setError(errorMessage);
-      console.log("Updated error state:", errorMessage);
       return false;
     } finally {
       setLoading(false);

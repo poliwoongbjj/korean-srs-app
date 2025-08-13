@@ -43,7 +43,6 @@ const SettingsPage = () => {
     const loadPreferences = async () => {
       try {
         const response = await settingsService.getUserPreferences();
-        console.log("Loaded preferences:", response);
 
         if (response.success && response.data) {
           setStudyPreferences({
