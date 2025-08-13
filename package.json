@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
-    "setup-db": "node ./database/setup-db.js"
+    "setup-db": "node ./database/setup-db.js",
     "build": "npm run build"
   },
   "dependencies": {
